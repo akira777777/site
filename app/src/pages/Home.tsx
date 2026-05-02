@@ -31,25 +31,37 @@ const scrollBehavior = () =>
 
 const featuredGames = [
   {
+    id: 'neon',
     title: 'Neon Reels',
     imageBase: 'slot_neon',
     fallback: '/images/slot_neon.png',
-    tag: '96.8% RTP',
-    copy: 'Fast rounds, bright symbols, and volatile bonus ladders.',
+    tag: '5 Lines',
+    copy: 'Classic 3x3 energy with Crown tickets, streak meter, and Star wild upgrades.',
+    layout: '3x3 reels',
+    volatility: 'Fast',
+    bonus: '3 Crowns award free-spin tickets; streak wins activate 2x wild mode.',
   },
   {
-    title: 'Gold Vault',
-    imageBase: 'slot_jackpot',
-    fallback: '/images/slot_jackpot.png',
-    tag: 'Mega Drops',
-    copy: 'Stacked wilds, vault multipliers, and jackpot chases.',
-  },
-  {
-    title: 'Cyber Fruits',
+    id: 'cascade',
+    title: 'Cascade Nexus',
     imageBase: 'slot_symbols',
     fallback: '/images/slot_symbols.png',
-    tag: 'New',
-    copy: 'Classic slot rhythm with modern boosts and free spins.',
+    tag: 'Clusters',
+    copy: 'A 5x5 arcade grid where symbol clusters pop into rising cascade multipliers.',
+    layout: '5x5 cluster board',
+    volatility: 'Swingy',
+    bonus: '5+ connected symbols pay, cascades climb, and 3 Crowns unlock free drops.',
+  },
+  {
+    id: 'vault',
+    title: 'Vault Lock',
+    imageBase: 'slot_jackpot',
+    fallback: '/images/slot_jackpot.png',
+    tag: 'Hold & Spin',
+    copy: 'Cash symbols lock into a vault board, respins reset, and full boards chase a mega jackpot.',
+    layout: '3x5 hold board',
+    volatility: 'Bonus heavy',
+    bonus: 'Cash and locks stick; 6 locked cells start respins; 15 cells trigger mega payout.',
   },
 ];
 
@@ -187,9 +199,22 @@ function LazyLandingSection({
 
 export default function Home() {
   const [reserveOpen, setReserveOpen] = useState(false);
+  const [activePreview, setActivePreview] = useState(featuredGames[0].id);
+
+  const selectedGame = featuredGames.find((game) => game.id === activePreview) || featuredGames[0];
 
   const scrollToPlay = () => {
     document.getElementById('play')?.scrollIntoView({ behavior: scrollBehavior() });
+  };
+
+  const selectFeaturedGame = (gameId: string) => {
+    setActivePreview(gameId);
+    try {
+      localStorage.setItem('casino_active_slot', gameId);
+    } catch {
+      // localStorage unavailable
+    }
+    window.dispatchEvent(new CustomEvent('casino:slot-selected', { detail: { slotId: gameId } }));
   };
 
   return (
@@ -245,7 +270,7 @@ export default function Home() {
             <div className="mt-12 grid max-w-4xl grid-cols-1 border border-casino-ivory/12 bg-casino-ink/70 backdrop-blur md:grid-cols-3">
               {[
                 ['Demo balance', '1,000', 'Free credits on signup'],
-                ['Featured games', '12+', 'Slots, jackpots, and bonuses'],
+                ['Featured games', '3', 'Distinct playable slot modes'],
                 ['Big-win feed', 'Live', 'Rotating leaderboard action'],
               ].map(([label, value, copy]) => (
                 <div key={label} className="border-b border-casino-ivory/12 p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
@@ -272,9 +297,17 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1fr_1fr_1.15fr]">
               {featuredGames.map((game) => (
-                <article key={game.title} className="group overflow-hidden border border-casino-ivory/12 bg-casino-charcoal/70">
+                <button
+                  key={game.title}
+                  onClick={() => selectFeaturedGame(game.id)}
+                  className={`group overflow-hidden border bg-casino-charcoal/70 text-left transition ${
+                    activePreview === game.id
+                      ? 'border-casino-cyber shadow-[0_0_30px_rgba(0,243,255,0.14)]'
+                      : 'border-casino-ivory/12 hover:border-casino-gold/40'
+                  }`}
+                >
                   <div className="aspect-[4/3] overflow-hidden bg-black">
                     <ResponsiveImage
                       imageBase={game.imageBase}
@@ -288,15 +321,37 @@ export default function Home() {
                   </div>
                   <div className="p-5">
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <h3 className="font-serif text-3xl uppercase text-casino-ivory">{game.title}</h3>
+                      <h3 className="font-serif text-2xl uppercase text-casino-ivory">{game.title}</h3>
                       <span className="shrink-0 border border-casino-gold/40 px-2 py-1 font-mono text-[11px] uppercase tracking-widest text-casino-gold">
                         {game.tag}
                       </span>
                     </div>
                     <p className="text-sm leading-6 text-casino-muted">{game.copy}</p>
                   </div>
-                </article>
+                </button>
               ))}
+              <aside className="border border-casino-cyber/25 bg-casino-ink/80 p-5">
+                <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Active Preview</p>
+                <h3 className="mt-3 font-serif text-3xl uppercase text-casino-ivory">{selectedGame.title}</h3>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="border border-casino-ivory/12 bg-black/30 p-3">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Layout</p>
+                    <p className="mt-1 text-sm text-casino-ivory">{selectedGame.layout}</p>
+                  </div>
+                  <div className="border border-casino-ivory/12 bg-black/30 p-3">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Volatility</p>
+                    <p className="mt-1 text-sm text-casino-ivory">{selectedGame.volatility}</p>
+                  </div>
+                </div>
+                <p className="mt-5 text-sm leading-6 text-casino-muted">{selectedGame.bonus}</p>
+                <button
+                  onClick={scrollToPlay}
+                  className="mt-6 inline-flex w-full items-center justify-center gap-2 bg-casino-cyber px-5 py-3 font-mono text-xs uppercase tracking-widest text-casino-ink transition hover:bg-casino-gold focus:outline-none focus:ring-2 focus:ring-casino-cyber"
+                >
+                  Play This Slot
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </aside>
             </div>
           </div>
         </section>
@@ -337,10 +392,10 @@ export default function Home() {
         <section className="relative overflow-hidden bg-casino-ink px-[6vw] py-16">
           <div className="mx-auto grid max-w-7xl grid-cols-1 border border-casino-ivory/12 md:grid-cols-4">
             {[
-              { icon: BadgeCheck, label: 'Fair demo flow', copy: 'Transparent credits and reset controls' },
-              { icon: Clock3, label: 'Fast rounds', copy: 'Short spins with clear win feedback' },
-              { icon: Trophy, label: 'Rank chase', copy: 'Live table keeps the page moving' },
-              { icon: CircleDollarSign, label: 'Bonus clarity', copy: 'No buried first action' },
+              { icon: BadgeCheck, label: 'Mission Streak', copy: 'Win streaks activate temporary boosts' },
+              { icon: Clock3, label: 'Free Tickets', copy: 'Signup picks and scatters feed demo spins' },
+              { icon: Trophy, label: 'Mystery Meter', copy: 'Losses build toward surprise rewards' },
+              { icon: CircleDollarSign, label: 'Multiplier Pass', copy: 'Selected bonuses double upcoming wins' },
             ].map(({ icon: Icon, label, copy }) => (
               <div key={label} className="border-b border-casino-ivory/12 p-5 md:border-b-0 md:border-r md:last:border-r-0">
                 <Icon className="h-6 w-6 text-casino-gold" />
@@ -348,6 +403,36 @@ export default function Home() {
                 <p className="mt-2 text-sm leading-6 text-casino-muted">{copy}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="relative bg-[#0d0918] px-[6vw] py-16">
+          <div className="mx-auto max-w-7xl border border-casino-neon/20 bg-casino-ink/80 p-6 md:p-8">
+            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <div>
+                <p className="font-mono text-xs uppercase tracking-widest text-casino-neon">Bonus Lab</p>
+                <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-5xl">
+                  Rewards That Touch The Reels
+                </h2>
+              </div>
+              <p className="max-w-lg text-sm leading-6 text-casino-muted">
+                Bonus choices are no longer cosmetic: credits hit the wallet, spin tickets power free rounds, and multiplier passes change the next playable results.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              {[
+                { title: 'Active Mission', value: '3-win streak', copy: 'Unlock 2x wild boost in Neon Reels.' },
+                { title: 'Current Boost', value: '2x pass', copy: 'Signup multiplier passes apply inside the cabinet.' },
+                { title: 'Free Tickets', value: '10 spins', copy: 'Pick the arcade spin bonus or earn scatters.' },
+                { title: 'Mystery Meter', value: '0-100%', copy: 'Losing spins fill it toward tickets, boosts, or credits.' },
+              ].map((item) => (
+                <article key={item.title} className="border border-casino-ivory/12 bg-black/25 p-5">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{item.title}</p>
+                  <h3 className="mt-2 font-serif text-3xl text-casino-gold">{item.value}</h3>
+                  <p className="mt-3 text-sm leading-6 text-casino-muted">{item.copy}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 

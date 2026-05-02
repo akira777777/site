@@ -16,11 +16,12 @@ const LEADERBOARD = [
 ];
 
 const RECENT_WINS = [
-  { name: 'SpinMaster', amount: 9900, symbol: '💎', time: '2m ago' },
-  { name: 'CyberLuck7', amount: 4500, symbol: '👑', time: '5m ago' },
-  { name: 'NeonKing',   amount: 1800, symbol: '⭐', time: '8m ago' },
-  { name: 'LuckyAce',   amount: 7700, symbol: '💎', time: '11m ago' },
-  { name: 'Phantom_X',  amount: 2200, symbol: '🔔', time: '14m ago' },
+  { name: 'SpinMaster', amount: 9900, symbol: '💎', game: 'Neon Reels', time: '2m ago' },
+  { name: 'CyberLuck7', amount: 4500, symbol: '👑', game: 'Cascade Nexus', time: '5m ago' },
+  { name: 'VaultQueen', amount: 8200, symbol: '💰', game: 'Vault Lock', time: '7m ago' },
+  { name: 'NeonKing',   amount: 1800, symbol: '⭐', game: 'Neon Reels', time: '8m ago' },
+  { name: 'LuckyAce',   amount: 7700, symbol: '💎', game: 'Cascade Nexus', time: '11m ago' },
+  { name: 'Phantom_X',  amount: 2200, symbol: '🔔', game: 'Vault Lock', time: '14m ago' },
 ];
 
 interface LeaderboardSectionProps {
@@ -171,7 +172,7 @@ export default function LeaderboardSection({ sectionId = 'jackpots' }: Leaderboa
                 <span className="text-2xl flex-shrink-0">{win.symbol}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-mono text-sm text-casino-ivory font-bold truncate">{win.name}</p>
-                  <p className="font-mono text-[10px] text-casino-muted">{win.time}</p>
+                  <p className="font-mono text-[10px] text-casino-muted truncate">{win.game} · {win.time}</p>
                 </div>
                 <span className="font-mono text-casino-gold font-bold flex-shrink-0">+{win.amount.toLocaleString()}</span>
               </div>

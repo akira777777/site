@@ -23,9 +23,16 @@ interface SignUpModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const BONUS_LABELS: Record<string, string> = {
+  spins: '10 Arcade Free Spins Added',
+  credits: '+1,000 Free Credits Added',
+  match: '3 Multiplier Passes Added',
+};
+
 export default function ReservationModal({ open, onOpenChange }: SignUpModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [awardedBonus, setAwardedBonus] = useState('');
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -63,12 +70,31 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
     if (!isValid) return;
 
     setSubmitted(true);
+    setAwardedBonus(form.bonus);
 
     try {
       const saved = localStorage.getItem('casino_credits');
       const parsed = parseInt(saved || '1000', 10);
       const currentCredits = !isNaN(parsed) && parsed >= 0 ? parsed : 1000;
-      localStorage.setItem('casino_credits', (currentCredits + 1000).toString());
+
+      const savedBonus = localStorage.getItem('casino_bonus_state');
+      const bonusState = savedBonus ? JSON.parse(savedBonus) : {};
+
+      if (form.bonus === 'credits') {
+        localStorage.setItem('casino_credits', (currentCredits + 1000).toString());
+      } else if (form.bonus === 'spins') {
+        localStorage.setItem('casino_bonus_state', JSON.stringify({
+          ...bonusState,
+          freeSpinTickets: Math.max(0, Number(bonusState.freeSpinTickets) || 0) + 10,
+        }));
+      } else if (form.bonus === 'match') {
+        localStorage.setItem('casino_bonus_state', JSON.stringify({
+          ...bonusState,
+          multiplierPasses: Math.max(0, Number(bonusState.multiplierPasses) || 0) + 3,
+        }));
+      }
+
+      window.dispatchEvent(new CustomEvent('casino:bonus-awarded', { detail: { bonus: form.bonus } }));
     } catch {
       // localStorage unavailable
     }
@@ -108,7 +134,7 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
             <CheckCircle2 className="w-16 h-16 text-casino-neon animate-pulse [filter:drop-shadow(0_0_10px_#00f3ff)]" />
             <p className="font-serif text-2xl text-casino-ivory [text-shadow:0_0_10px_rgba(255,255,255,0.5)]">Account Created!</p>
             <p className="text-casino-gold font-mono text-sm text-center max-w-xs animate-bounce mt-2">
-              +1,000 Free Credits Added
+              {BONUS_LABELS[awardedBonus] || 'Welcome Bonus Added'}
             </p>
           </div>
         ) : (
@@ -184,9 +210,9 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
                   <SelectValue placeholder="Choose your bonus" />
                 </SelectTrigger>
                 <SelectContent className="bg-casino-charcoal border-casino-neon/30 text-casino-ivory">
-                  <SelectItem value="spins" className="focus:bg-casino-neon/20 focus:text-casino-neon">100 Free Spins</SelectItem>
+                  <SelectItem value="spins" className="focus:bg-casino-neon/20 focus:text-casino-neon">10 Arcade Free Spins</SelectItem>
                   <SelectItem value="credits" className="focus:bg-casino-neon/20 focus:text-casino-neon">1,000 Free Credits</SelectItem>
-                  <SelectItem value="match" className="focus:bg-casino-neon/20 focus:text-casino-neon">200% Deposit Match</SelectItem>
+                  <SelectItem value="match" className="focus:bg-casino-neon/20 focus:text-casino-neon">3 Multiplier Passes</SelectItem>
                 </SelectContent>
               </Select>
               {touched.bonus && errors.bonus && (
