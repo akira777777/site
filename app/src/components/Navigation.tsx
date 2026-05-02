@@ -28,10 +28,10 @@ export default function Navigation({ onReserve }: NavigationProps) {
   };
 
   const navItems = [
-    { label: 'Events', id: 'events' },
-    { label: 'Experience', id: 'experience' },
-    { label: 'Membership', id: 'membership' },
-    { label: 'Contact', id: 'contact' },
+    { label: 'Play Now', id: 'play' },
+    { label: 'High Stakes', id: 'bet' },
+    { label: 'Philosophy', id: 'philosophy' },
+    { label: 'Support', id: 'contact' },
   ];
 
   return (
@@ -49,9 +49,10 @@ export default function Navigation({ onReserve }: NavigationProps) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setMobileOpen(false);
           }}
-          className="font-serif text-casino-ivory text-xl tracking-tight hover:opacity-100 opacity-80 transition-opacity"
+          className="font-serif text-casino-ivory text-xl tracking-tight hover:opacity-100 opacity-80 transition-opacity uppercase"
+          style={{ textShadow: '0 0 10px rgba(176,38,255,0.8)' }}
         >
-          Atriom
+          Cyber Slots
         </a>
 
         {/* Desktop nav */}
@@ -68,9 +69,9 @@ export default function Navigation({ onReserve }: NavigationProps) {
           ))}
           <button
             onClick={onReserve}
-            className="font-mono text-xs px-5 py-2 border border-casino-ember text-casino-ember rounded-full hover:bg-casino-ember hover:text-casino-ivory transition-all uppercase tracking-wide cursor-pointer"
+            className="font-mono text-xs px-5 py-2 bg-casino-neon/10 border border-casino-neon text-casino-neon rounded-full hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_15px_rgba(0,243,255,0.6)] transition-all uppercase tracking-wide cursor-pointer"
           >
-            Reserve
+            Sign Up
           </button>
         </div>
 
@@ -106,9 +107,9 @@ export default function Navigation({ onReserve }: NavigationProps) {
               setMobileOpen(false);
               onReserve();
             }}
-            className="font-mono text-sm px-6 py-2.5 border border-casino-ember text-casino-ember rounded-full hover:bg-casino-ember hover:text-casino-ivory transition-all uppercase tracking-wide cursor-pointer"
+            className="font-mono text-sm px-6 py-2.5 bg-casino-neon/10 border border-casino-neon text-casino-neon rounded-full hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_15px_rgba(0,243,255,0.6)] transition-all uppercase tracking-wide cursor-pointer"
           >
-            Reserve
+            Sign Up
           </button>
         </div>
       </div>

@@ -19,6 +19,9 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
     // Wait for all ScrollTriggers to be created
     const timer = setTimeout(() => {
       const pinned = ScrollTrigger.getAll()

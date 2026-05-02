@@ -68,17 +68,17 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
           {/* Left: CTA */}
           <div id="reserve">
-            <h2 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase mb-4">
-              Reserve your evening
+            <h2 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase mb-4" style={{ textShadow: '0 0 20px rgba(176,38,255,0.4)' }}>
+              Start Spinning Today
             </h2>
             <p className="text-casino-muted text-base max-w-md mb-8 leading-relaxed">
-              We keep the room small and the energy high. Book early.
+              Join the ultimate high-stakes online experience. Claim your welcome bonus and hit the jackpot.
             </p>
             <button
               onClick={onReserve}
-              className="inline-block px-8 py-4 bg-casino-ember text-casino-ivory rounded-full font-mono text-sm hover:bg-casino-ember/90 transition-colors cursor-pointer"
+              className="inline-block px-8 py-4 bg-casino-neon/20 border border-casino-neon text-casino-neon rounded-full font-mono text-sm hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_20px_rgba(0,243,255,0.5)] transition-all cursor-pointer tracking-widest uppercase"
             >
-              Request a table
+              Claim Bonus
             </button>
           </div>
 
@@ -86,11 +86,11 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
           <div className="md:pl-12">
             <div className="space-y-4">
               <a
-                href="mailto:hello@atriom.club"
+                href="mailto:support@cyberslots.club"
                 className="flex items-center gap-3 text-casino-muted hover:text-casino-ivory transition-colors"
               >
-                <Mail className="w-4 h-4 text-casino-ember" />
-                <span className="font-mono text-sm">hello@atriom.club</span>
+                <Mail className="w-4 h-4 text-casino-neon" />
+                <span className="font-mono text-sm">support@cyberslots.club</span>
               </a>
               <a
                 href="tel:+12135550199"
@@ -100,8 +100,8 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
                 <span className="font-mono text-sm">+1 (213) 555-0199</span>
               </a>
               <div className="flex items-center gap-3 text-casino-muted">
-                <MapPin className="w-4 h-4 text-casino-ember" />
-                <span className="font-mono text-sm">Downtown Arts District</span>
+                <MapPin className="w-4 h-4 text-casino-neon" />
+                <span className="font-mono text-sm">Global Online Platform</span>
               </div>
             </div>
 
@@ -132,7 +132,7 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
         {/* Bottom row */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="font-mono text-xs text-casino-muted/60">
-            © 2025 Atriom. All rights reserved.
+            © 2025 Cyber Slots. All rights reserved. 18+ Only.
           </p>
           <div className="flex gap-6">
             <a href="#" className="font-mono text-xs text-casino-muted/60 hover:text-casino-ivory transition-colors">
@@ -148,8 +148,6 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
         </div>
       </div>
 
-      {/* Membership section ID anchor */}
-      <div id="membership" className="sr-only">Membership</div>
     </footer>
   );
 }

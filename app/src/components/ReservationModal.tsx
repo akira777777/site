@@ -16,31 +16,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar, Users, CheckCircle2 } from 'lucide-react';
+import { Gift, Mail, Lock, User, CheckCircle2 } from 'lucide-react';
 
-interface ReservationModalProps {
+interface SignUpModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function ReservationModal({ open, onOpenChange }: ReservationModalProps) {
+export default function ReservationModal({ open, onOpenChange }: SignUpModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
-    name: '',
+    username: '',
     email: '',
-    phone: '',
-    date: '',
-    guests: '',
-    experience: '',
+    password: '',
+    bonus: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    
+    // Simulate API call and add bonus credits
+    const currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
+    localStorage.setItem('casino_credits', (currentCredits + 1000).toString());
+
     setTimeout(() => {
       setSubmitted(false);
-      setForm({ name: '', email: '', phone: '', date: '', guests: '', experience: '' });
+      setForm({ username: '', email: '', password: '', bonus: '' });
       onOpenChange(false);
+      // We could trigger an event here to refresh credits in the slot machine,
+      // but for this demo, reloading or spinning will resync.
     }, 2500);
   };
 
@@ -50,122 +55,89 @@ export default function ReservationModal({ open, onOpenChange }: ReservationModa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-casino-charcoal border-casino-ivory/10 text-casino-ivory sm:max-w-md">
+      <DialogContent className="bg-casino-charcoal border border-casino-neon/30 text-casino-ivory sm:max-w-md shadow-[0_0_50px_rgba(0,243,255,0.15)]">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl text-casino-ivory uppercase tracking-tight">
-            Reserve Your Evening
+          <DialogTitle className="font-serif text-3xl text-casino-ivory uppercase tracking-tight" style={{ textShadow: '0 0 15px rgba(0,243,255,0.5)' }}>
+            Join Cyber Slots
           </DialogTitle>
           <DialogDescription className="text-casino-muted font-mono text-xs">
-            We keep the room small and the energy high. Book early.
+            Create an account today and claim your welcome bonus.
           </DialogDescription>
         </DialogHeader>
 
         {submitted ? (
           <div className="flex flex-col items-center justify-center py-10 gap-4">
-            <CheckCircle2 className="w-12 h-12 text-casino-ember" />
-            <p className="font-serif text-xl text-casino-ivory">Request Received</p>
-            <p className="text-casino-muted text-sm text-center max-w-xs">
-              We will contact you shortly to confirm your reservation.
+            <CheckCircle2 className="w-16 h-16 text-casino-neon animate-pulse" style={{ filter: 'drop-shadow(0 0 10px #00f3ff)' }} />
+            <p className="font-serif text-2xl text-casino-ivory" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Account Created!</p>
+            <p className="text-casino-gold font-mono text-sm text-center max-w-xs animate-bounce mt-2">
+              +1,000 Free Credits Added
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            
             <div className="space-y-1.5">
-              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide">
-                Full Name
+              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
+                <User className="w-3 h-3 text-casino-neon" /> Username
               </Label>
               <Input
                 required
-                value={form.name}
-                onChange={(e) => update('name', e.target.value)}
-                placeholder="Your name"
-                className="bg-casino-ink border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/50 focus-visible:ring-casino-ember"
+                value={form.username}
+                onChange={(e) => update('username', e.target.value)}
+                placeholder="cyber_spinner_99"
+                className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/30 focus-visible:ring-casino-neon"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide">
-                  Email
-                </Label>
-                <Input
-                  required
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => update('email', e.target.value)}
-                  placeholder="you@email.com"
-                  className="bg-casino-ink border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/50 focus-visible:ring-casino-ember"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide">
-                  Phone
-                </Label>
-                <Input
-                  required
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) => update('phone', e.target.value)}
-                  placeholder="+1 (555) 000-0000"
-                  className="bg-casino-ink border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/50 focus-visible:ring-casino-ember"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
-                  <Calendar className="w-3 h-3" /> Date
-                </Label>
-                <Input
-                  required
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => update('date', e.target.value)}
-                  className="bg-casino-ink border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/50 focus-visible:ring-casino-ember"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
-                  <Users className="w-3 h-3" /> Guests
-                </Label>
-                <Select value={form.guests} onValueChange={(v) => update('guests', v)} required>
-                  <SelectTrigger className="bg-casino-ink border-casino-ivory/10 text-casino-ivory focus:ring-casino-ember">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-casino-charcoal border-casino-ivory/10 text-casino-ivory">
-                    <SelectItem value="1">1 Guest</SelectItem>
-                    <SelectItem value="2">2 Guests</SelectItem>
-                    <SelectItem value="3">3 Guests</SelectItem>
-                    <SelectItem value="4">4 Guests</SelectItem>
-                    <SelectItem value="5+">5+ Guests</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
+                <Mail className="w-3 h-3 text-casino-neon" /> Email Address
+              </Label>
+              <Input
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => update('email', e.target.value)}
+                placeholder="you@example.com"
+                className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/30 focus-visible:ring-casino-neon"
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide">
-                Experience
+              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
+                <Lock className="w-3 h-3 text-casino-neon" /> Password
               </Label>
-              <Select value={form.experience} onValueChange={(v) => update('experience', v)} required>
-                <SelectTrigger className="bg-casino-ink border-casino-ivory/10 text-casino-ivory focus:ring-casino-ember">
-                  <SelectValue placeholder="Choose your evening" />
+              <Input
+                required
+                type="password"
+                value={form.password}
+                onChange={(e) => update('password', e.target.value)}
+                placeholder="••••••••"
+                className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/30 focus-visible:ring-casino-neon"
+              />
+            </div>
+
+            <div className="space-y-1.5 pt-2">
+              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
+                <Gift className="w-3 h-3 text-casino-gold" /> Select Welcome Bonus
+              </Label>
+              <Select value={form.bonus} onValueChange={(v) => update('bonus', v)} required>
+                <SelectTrigger className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory focus:ring-casino-neon">
+                  <SelectValue placeholder="Choose your bonus" />
                 </SelectTrigger>
-                <SelectContent className="bg-casino-charcoal border-casino-ivory/10 text-casino-ivory">
-                  <SelectItem value="roulette">Roulette Night</SelectItem>
-                  <SelectItem value="poker">Poker Room</SelectItem>
-                  <SelectItem value="lounge">Late Lounge</SelectItem>
-                  <SelectItem value="private">Private Event</SelectItem>
+                <SelectContent className="bg-casino-charcoal border-casino-neon/30 text-casino-ivory">
+                  <SelectItem value="spins" className="focus:bg-casino-neon/20 focus:text-casino-neon">100 Free Spins</SelectItem>
+                  <SelectItem value="credits" className="focus:bg-casino-neon/20 focus:text-casino-neon">1,000 Free Credits</SelectItem>
+                  <SelectItem value="match" className="focus:bg-casino-neon/20 focus:text-casino-neon">200% Deposit Match</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <Button
               type="submit"
-              className="w-full mt-2 bg-casino-ember hover:bg-casino-ember/90 text-casino-ivory rounded-full font-mono text-sm uppercase tracking-wide"
+              className="w-full mt-6 bg-casino-neon/20 border border-casino-neon hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_20px_rgba(0,243,255,0.6)] text-casino-neon rounded-full font-mono text-sm uppercase tracking-widest transition-all duration-300 h-12"
             >
-              Request a table
+              Claim Bonus & Play
             </Button>
           </form>
         )}

@@ -37,12 +37,12 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
         fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <h1 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase tracking-tight mb-8">
-        Atriom
+      <h1 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase tracking-tight mb-8" style={{ textShadow: '0 0 15px rgba(0,243,255,0.8)' }}>
+        Cyber Slots
       </h1>
       <div className="w-48 h-px bg-casino-ivory/10 relative overflow-hidden">
         <div
-          className="absolute top-0 left-0 h-full bg-casino-ember transition-all duration-100"
+          className="absolute top-0 left-0 h-full bg-casino-neon transition-all duration-100 shadow-[0_0_10px_#00f3ff]"
           style={{ width: `${progress}%` }}
         />
       </div>

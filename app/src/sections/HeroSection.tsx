@@ -166,10 +166,7 @@ export default function HeroSection() {
     window.addEventListener('resize', resize);
 
     const render = () => {
-      if (!visibleRef.current) {
-        rafRef.current = requestAnimationFrame(render);
-        return;
-      }
+      if (!visibleRef.current) return;
       timeRef.current += 0.016;
       gl.useProgram(program);
       gl.uniform1f(uniformsRef.current.uTime, timeRef.current);
@@ -181,12 +178,29 @@ export default function HeroSection() {
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       rafRef.current = requestAnimationFrame(render);
     };
-    rafRef.current = requestAnimationFrame(render);
+
+    const startLoop = () => {
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(render);
+      }
+    };
+
+    const stopLoop = () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    };
+
+    startLoop();
 
     // IntersectionObserver to pause rendering when off-screen
     const observer = new IntersectionObserver(
       ([entry]) => {
         visibleRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
       },
       { threshold: 0 }
     );
