@@ -3,6 +3,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Trophy, TrendingUp, Star } from 'lucide-react';
 
+gsap.registerPlugin(ScrollTrigger);
+
 const LEADERBOARD = [
   { rank: 1, name: 'SpinMaster',   total: 99400, wins: 47, badge: '👑', color: '#ffd700' },
   { rank: 2, name: 'LuckyAce',     total: 77200, wins: 38, badge: '💎', color: '#c0c0c0' },

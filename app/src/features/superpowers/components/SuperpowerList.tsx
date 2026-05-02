@@ -8,6 +8,8 @@ import { SuperpowerCard } from './SuperpowerCard';
 import { useSuperpowerContext } from '../context/superpowerContextValue';
 import type { Superpower } from '../types';
 
+gsap.registerPlugin(ScrollTrigger);
+
 /**
  * SuperpowerList
  * 

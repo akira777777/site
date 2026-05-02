@@ -3,13 +3,9 @@ import { BrowserRouter } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { theme } from './theme'
 import './index.css'
 import App from './App.tsx'
-
-gsap.registerPlugin(ScrollTrigger);
 
 const queryClient = new QueryClient({
   defaultOptions: {

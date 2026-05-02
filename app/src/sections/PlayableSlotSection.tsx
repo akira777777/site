@@ -5,6 +5,8 @@ import confetti from 'canvas-confetti';
 import { Gem, Crown, Bell, Star, Flame, Coins, Volume2, VolumeX, RotateCcw, Trophy, X } from 'lucide-react';
 import { AudioEngine } from '../utils/audioEngine';
 
+gsap.registerPlugin(ScrollTrigger);
+
 const SYMBOLS_DATA = [
   { id: 'coins',  icon: Coins,  color: '#facc15', weight: 40, payout: 2,   label: 'Coins'  },
   { id: 'flame',  icon: Flame,  color: '#ff4500', weight: 30, payout: 3,   label: 'Flame'  },
