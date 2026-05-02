@@ -39,7 +39,9 @@ export const AudioEngine = (() => {
         lfo.start();
       });
       hasStartedAmbient = true;
-    } catch (_) { }
+    } catch {
+      // Ignore audio context errors before user interaction
+    }
   };
 
   const playTone = (freq: number, type: OscillatorType, duration: number, volume = 0.3, detune = 0) => {
