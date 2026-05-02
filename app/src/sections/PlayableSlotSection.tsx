@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import confetti from 'canvas-confetti';
+import { Gem, Crown, Bell, Star, Flame, Coins } from 'lucide-react';
 
-// Weighted symbols (higher weight = more common)
+// Using Lucide React Icons for a premium vector look
 const SYMBOLS_DATA = [
-  { char: '🍒', weight: 40, payout: 2 },
-  { char: '🍋', weight: 30, payout: 3 },
-  { char: '🔔', weight: 15, payout: 5 },
-  { char: '🃏', weight: 10, payout: 10 },
-  { char: '7️⃣', weight: 4, payout: 25 },
-  { char: '💎', weight: 1, payout: 100 },
+  { id: 'coins', icon: Coins, color: '#facc15', weight: 40, payout: 2 },   // Casino Gold
+  { id: 'flame', icon: Flame, color: '#ff4500', weight: 30, payout: 3 },   // Ember
+  { id: 'bell', icon: Bell, color: '#38bdf8', weight: 15, payout: 5 },     // Cyber Teal
+  { id: 'star', icon: Star, color: '#c084fc', weight: 10, payout: 10 },    // Neon Purple
+  { id: 'crown', icon: Crown, color: '#fbbf24', weight: 4, payout: 25 },   // Bright Gold
+  { id: 'gem', icon: Gem, color: '#ffffff', weight: 1, payout: 100 },      // Diamond White
 ];
 
 const REEL_SPIN_DURATION_BASE = 1000; // base time for reel 1
@@ -27,15 +29,13 @@ const getRandomSymbol = () => {
 };
 
 // Generate initial 3x3 grid
-const getInitialGrid = () => Array(3).fill(null).map(() => Array(3).fill(null).map(() => getRandomSymbol().char));
+const getInitialGrid = () => Array(3).fill(null).map(() => Array(3).fill(null).map(() => getRandomSymbol().id));
 
 // The 5 Paylines definition (row, col)
 const PAYLINES = [
-  // Horizontal
   [[0,0], [0,1], [0,2]], // Top
   [[1,0], [1,1], [1,2]], // Middle
   [[2,0], [2,1], [2,2]], // Bottom
-  // Diagonal
   [[0,0], [1,1], [2,2]], // Diag Down
   [[2,0], [1,1], [0,2]], // Diag Up
 ];
@@ -48,11 +48,11 @@ export default function PlayableSlotSection() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isAutoSpining, setIsAutoSpining] = useState(false);
   const [credits, setCredits] = useState(1000);
-  const [displayCredits, setDisplayCredits] = useState(1000); // For count up animation
+  const [displayCredits, setDisplayCredits] = useState(1000);
   const [bet, setBet] = useState(10);
   const [lastWin, setLastWin] = useState(0);
   const [message, setMessage] = useState("SPIN TO WIN!");
-  const [winningLines, setWinningLines] = useState<number[][]>([]); // Array of lines (each line is an array of 3 [r,c] coords)
+  const [winningLines, setWinningLines] = useState<number[][]>([]);
 
   const reelsRef = useRef<(HTMLDivElement | null)[]>([]);
   const autoSpinRef = useRef(isAutoSpining);
@@ -131,7 +131,6 @@ export default function PlayableSlotSection() {
     setIsAutoSpining(prev => {
       const next = !prev;
       if (next && !isSpinning) {
-        // Start immediately if turning on
         setTimeout(() => performSpin(), 100);
       }
       return next;
@@ -140,7 +139,7 @@ export default function PlayableSlotSection() {
 
   const performSpin = useCallback(() => {
     if (credits < bet) {
-      setMessage("INSUFFICIENT CREDITS");
+      setMessage("INSUFFICIENT FUNDS");
       setIsAutoSpining(false);
       return;
     }
@@ -151,12 +150,12 @@ export default function PlayableSlotSection() {
     setLastWin(0);
     setMessage("SPINNING...");
 
-    // Start spin animations
+    // Start spin animations (Simulate motion blur and rapid scrolling)
     reelsRef.current.forEach((reel, i) => {
       if (reel) {
         gsap.to(reel, {
           y: '+=100%',
-          duration: 0.1,
+          duration: 0.08, // faster
           repeat: -1,
           ease: 'none',
           modifiers: {
@@ -186,6 +185,11 @@ export default function PlayableSlotSection() {
           return updated;
         });
 
+        // Add a slight "bounce" effect when a reel stops
+        if (reel) {
+            gsap.fromTo(reel, { y: '-10%' }, { y: '0%', duration: 0.3, ease: 'bounce.out' });
+        }
+
       }, REEL_SPIN_DURATION_BASE + (colIndex * REEL_STOP_DELAY));
     });
 
@@ -200,7 +204,7 @@ export default function PlayableSlotSection() {
         const sym3 = newGrid[line[2][0]][line[2][1]];
 
         if (sym1 === sym2 && sym2 === sym3) {
-          const symbolData = SYMBOLS_DATA.find(s => s.char === sym1);
+          const symbolData = SYMBOLS_DATA.find(s => s.id === sym1);
           if (symbolData) {
             totalWin += symbolData.payout * bet;
             matchedLines.push(line);
@@ -215,11 +219,12 @@ export default function PlayableSlotSection() {
         
         if (totalWin >= bet * 25) {
           setMessage(`MEGA WIN! +${totalWin}`);
+          fireConfetti();
         } else {
           setMessage(`WINNER! +${totalWin}`);
         }
       } else {
-        setMessage("TRY AGAIN!");
+        setMessage("PLACE YOUR BETS");
       }
 
       setIsSpinning(false);
@@ -228,16 +233,65 @@ export default function PlayableSlotSection() {
       if (autoSpinRef.current) {
         setTimeout(() => {
           if (autoSpinRef.current) performSpin();
-        }, 1500); // Wait 1.5s before next auto spin
+        }, 1500); 
       }
 
     }, REEL_SPIN_DURATION_BASE + (2 * REEL_STOP_DELAY) + 100);
 
   }, [bet, credits]);
 
-  // Check if a cell is part of a winning line
+  const fireConfetti = () => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#b026ff', '#ffd700', '#00f3ff']
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#b026ff', '#ffd700', '#00f3ff']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  };
+
   const isCellWinning = (r: number, c: number) => {
     return winningLines.some(line => line.some(coord => coord[0] === r && coord[1] === c));
+  };
+
+  const renderSymbol = (id: string, isWinning: boolean, isBoardWinning: boolean) => {
+    const sym = SYMBOLS_DATA.find(s => s.id === id) || SYMBOLS_DATA[0];
+    const IconComponent = sym.icon;
+    
+    // Dim symbols if the board is in a winning state but this symbol didn't win
+    const opacityClass = isBoardWinning && !isWinning ? 'opacity-20 grayscale' : 'opacity-100';
+    const scaleClass = isWinning ? 'scale-125 z-20' : '';
+    const glowStyle = isWinning 
+        ? { filter: `drop-shadow(0 0 15px ${sym.color}) drop-shadow(0 0 30px ${sym.color})` }
+        : { filter: `drop-shadow(0 0 5px ${sym.color}80)` };
+
+    return (
+        <div className={`transition-all duration-300 flex items-center justify-center w-full h-full ${opacityClass} ${scaleClass}`}>
+            <IconComponent 
+                size={isWinning ? 64 : 48} 
+                color={sym.color} 
+                style={glowStyle} 
+                strokeWidth={isWinning ? 2.5 : 1.5}
+            />
+        </div>
+    );
   };
 
   return (
@@ -247,83 +301,90 @@ export default function PlayableSlotSection() {
       className="relative w-full min-h-screen bg-casino-ink py-[10vh] flex flex-col items-center justify-center overflow-hidden"
       style={{ zIndex: 90 }}
     >
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 60%)' }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(176,38,255,0.05) 0%, transparent 60%)' }} />
 
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-[6vw] flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-[6vw] flex flex-col items-center">
         
-        <div className="text-center mb-8">
-          <h2 className="font-serif text-5xl md:text-7xl text-casino-ivory uppercase" style={{ textShadow: '0 0 20px rgba(176,38,255,0.6)' }}>
-            Neon Slots
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h2 className="font-serif text-5xl md:text-7xl text-casino-ivory uppercase" style={{ textShadow: '0 0 30px rgba(176,38,255,0.8)' }}>
+            Cyber Slots
           </h2>
-          <p className={`font-mono mt-4 text-xl h-8 tracking-widest uppercase transition-colors duration-300 ${winningLines.length > 0 ? 'text-casino-ember animate-bounce' : 'text-casino-gold animate-pulse'}`}>
-            {message}
-          </p>
+          <div className="mt-6 bg-black/40 px-8 py-2 rounded-full border border-casino-neon/30 inline-block shadow-[0_0_20px_rgba(176,38,255,0.2)]">
+             <p className={`font-mono text-xl tracking-widest uppercase transition-colors duration-300 ${winningLines.length > 0 ? 'text-casino-gold animate-bounce' : 'text-casino-neon animate-pulse'}`}>
+               {message}
+             </p>
+          </div>
         </div>
 
-        {/* Slot Machine Container */}
-        <div className={`bg-casino-charcoal p-6 md:p-8 rounded-3xl border transition-all duration-500 w-full max-w-3xl ${winningLines.length > 0 ? 'shadow-[0_0_80px_rgba(255,0,127,0.5)] border-casino-ember' : 'shadow-[0_0_50px_rgba(176,38,255,0.3)] border-casino-neon/30'}`}>
+        {/* Arcade Cabinet Container */}
+        <div className={`relative bg-casino-ink/80 backdrop-blur-xl p-8 rounded-[2.5rem] transition-all duration-500 w-full max-w-4xl border-2 ${
+            winningLines.length > 0 ? 'shadow-[0_0_100px_rgba(255,215,0,0.3)] border-casino-gold' : 'shadow-[0_0_80px_rgba(0,0,0,0.8)] border-casino-ivory/10'
+            }`}>
           
-          {/* Top Display */}
-          <div className="flex justify-between items-center mb-6 px-4 font-mono text-lg md:text-xl bg-black/40 py-3 rounded-lg border border-white/5">
+          {/* Glassmorphic Top Display (Balance, Bet, Win) */}
+          <div className="flex justify-between items-center mb-8 px-8 py-4 rounded-2xl bg-black/60 shadow-inner border-t border-white/10">
             <div className="flex flex-col">
-              <span className="text-casino-muted text-xs uppercase mb-1">Credits</span>
-              <span className="text-casino-ivory font-bold">{displayCredits.toLocaleString()}</span>
+              <span className="text-casino-muted text-[10px] tracking-widest uppercase mb-1">Balance</span>
+              <span className="text-casino-ivory font-mono text-2xl" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
+                {displayCredits.toLocaleString()}
+              </span>
             </div>
+            
             <div className="flex flex-col items-center">
-              <span className="text-casino-muted text-xs uppercase mb-1">Bet</span>
+              <span className="text-casino-muted text-[10px] tracking-widest uppercase mb-1">Current Bet</span>
               <button 
                 onClick={toggleBet} 
                 disabled={isSpinning || isAutoSpining}
-                className={`text-casino-gold font-bold px-4 py-1 rounded-md transition-colors ${!isSpinning && !isAutoSpining ? 'hover:bg-white/10 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
+                className={`font-mono text-2xl text-casino-neon font-bold px-6 py-1 rounded-lg transition-all ${
+                  !isSpinning && !isAutoSpining ? 'hover:bg-casino-neon/10 hover:shadow-[0_0_15px_rgba(0,243,255,0.3)] cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                }`}
+                style={{ textShadow: '0 0 15px rgba(0,243,255,0.8)' }}
               >
                 {bet}
               </button>
             </div>
+
             <div className="flex flex-col items-end">
-              <span className="text-casino-muted text-xs uppercase mb-1">Win</span>
-              <span className="text-casino-ember font-bold">{lastWin > 0 ? `+${lastWin.toLocaleString()}` : '0'}</span>
+              <span className="text-casino-muted text-[10px] tracking-widest uppercase mb-1">Last Win</span>
+              <span className="text-casino-gold font-mono text-2xl" style={{ textShadow: '0 0 15px rgba(255,215,0,0.8)' }}>
+                {lastWin > 0 ? `+${lastWin.toLocaleString()}` : '0'}
+              </span>
             </div>
           </div>
 
-          {/* Reels Area */}
-          <div className="relative bg-casino-ink rounded-xl border-[4px] border-casino-ivory/10 overflow-hidden h-[300px] flex justify-center items-center gap-2 md:gap-6 p-4">
+          {/* Reels Screen (Glassmorphic) */}
+          <div className="relative bg-[#050505] rounded-3xl border-4 border-[#1a1a1a] overflow-hidden h-[360px] flex justify-center items-center gap-4 p-6 shadow-[inset_0_0_50px_rgba(0,0,0,1)]">
             
-            {/* Horizontal Payline Indicators (Visual flair) */}
-            <div className="absolute left-2 top-[50%] -translate-y-1/2 flex flex-col justify-between h-full py-12 pointer-events-none opacity-20">
-              <div className="w-2 h-2 rounded-full bg-casino-neon" />
-              <div className="w-2 h-2 rounded-full bg-casino-neon" />
-              <div className="w-2 h-2 rounded-full bg-casino-neon" />
+            {/* Screen Glare Overlay */}
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none z-30" />
+
+            {/* Payline Guides (Visual only) */}
+            <div className="absolute left-4 top-[50%] -translate-y-1/2 flex flex-col justify-between h-full py-16 pointer-events-none opacity-30 z-10">
+              <div className="w-1 h-8 rounded-full bg-casino-neon" />
+              <div className="w-1 h-8 rounded-full bg-casino-ember" />
+              <div className="w-1 h-8 rounded-full bg-casino-neon" />
             </div>
-            <div className="absolute right-2 top-[50%] -translate-y-1/2 flex flex-col justify-between h-full py-12 pointer-events-none opacity-20">
-              <div className="w-2 h-2 rounded-full bg-casino-neon" />
-              <div className="w-2 h-2 rounded-full bg-casino-neon" />
-              <div className="w-2 h-2 rounded-full bg-casino-neon" />
+            <div className="absolute right-4 top-[50%] -translate-y-1/2 flex flex-col justify-between h-full py-16 pointer-events-none opacity-30 z-10">
+              <div className="w-1 h-8 rounded-full bg-casino-neon" />
+              <div className="w-1 h-8 rounded-full bg-casino-ember" />
+              <div className="w-1 h-8 rounded-full bg-casino-neon" />
             </div>
 
             {/* Columns */}
             {[0, 1, 2].map((colIndex) => (
-              <div key={colIndex} className="relative w-1/3 h-full overflow-hidden bg-black/60 rounded-lg shadow-inner border border-white/5">
+              <div key={colIndex} className="relative w-1/3 h-full overflow-hidden bg-black/40 rounded-xl border border-white/[0.02] shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
                 <div 
                   ref={(el) => { reelsRef.current[colIndex] = el; }}
                   className={`absolute top-0 left-0 w-full h-full flex flex-col`}
                 >
-                  <div className="h-full flex flex-col justify-between py-4">
+                  <div className="h-full flex flex-col justify-between py-2">
                     {[0, 1, 2].map((rowIndex) => {
                       const isWinning = isCellWinning(rowIndex, colIndex);
-                      // Determine if this reel is still spinning
-                      // The animation tweaks the transform of the container, but we also blur the content.
-                      // GSAP is modifying the parent div.
+                      const isBoardWinning = winningLines.length > 0;
                       return (
-                        <div 
-                          key={rowIndex} 
-                          className={`flex justify-center items-center h-[80px] text-5xl md:text-6xl lg:text-7xl transition-all duration-300 ${
-                            isWinning ? 'scale-125 z-20 drop-shadow-[0_0_25px_rgba(255,255,255,0.8)]' : 
-                            (winningLines.length > 0 ? 'opacity-20 grayscale' : 'opacity-90')
-                          }`}
-                        >
-                          <span style={{ textShadow: isWinning ? '0 0 30px currentColor' : '0 0 10px currentColor' }}>
-                            {grid[rowIndex][colIndex]}
-                          </span>
+                        <div key={rowIndex} className="flex justify-center items-center h-[100px] w-full">
+                          {renderSymbol(grid[rowIndex][colIndex], isWinning, isBoardWinning)}
                         </div>
                       )
                     })}
@@ -334,41 +395,64 @@ export default function PlayableSlotSection() {
 
           </div>
 
-          {/* Controls */}
-          <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          {/* Hardware Control Buttons */}
+          <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6 px-4">
+            
             <div className="flex gap-4 w-full md:w-auto">
+              {/* Auto Spin Button */}
               <button 
                 onClick={toggleAutoSpin}
-                className={`flex-1 md:flex-none px-6 py-3 rounded-full font-mono text-sm border transition-colors cursor-pointer ${
-                  isAutoSpining ? 'bg-casino-neon/20 text-casino-neon border-casino-neon' : 'bg-casino-ink text-casino-ivory/50 border-casino-ivory/10 hover:text-casino-ivory hover:border-casino-ivory/30'
+                className={`flex-1 md:flex-none relative overflow-hidden px-8 py-4 rounded-xl font-mono text-sm tracking-widest transition-all duration-300 cursor-pointer ${
+                  isAutoSpining 
+                  ? 'bg-casino-neon/20 text-casino-neon border-b-2 border-casino-neon translate-y-1 shadow-[inset_0_5px_15px_rgba(0,0,0,0.5),0_0_15px_rgba(0,243,255,0.4)]' 
+                  : 'bg-[#151515] text-casino-ivory/50 border-b-4 border-[#0a0a0a] hover:bg-[#1a1a1a] hover:text-casino-ivory hover:border-[#111] active:translate-y-1 active:border-b-0'
                 }`}
               >
-                {isAutoSpining ? 'STOP AUTO' : 'AUTO SPIN'}
+                <span className="relative z-10">{isAutoSpining ? 'STOP AUTO' : 'AUTO SPIN'}</span>
               </button>
+              
+              {/* Max Bet Button */}
               <button 
                 onClick={setMaxBet}
-                disabled={isSpinning || isAutoSpining}
-                className="flex-1 md:flex-none px-6 py-3 bg-casino-ink text-casino-ivory/50 rounded-full font-mono text-sm border border-casino-ivory/10 hover:text-casino-ivory hover:border-casino-ivory/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSpinning || isAutoSpining || bet === 100}
+                className={`flex-1 md:flex-none relative overflow-hidden px-8 py-4 rounded-xl font-mono text-sm tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    bet === 100 && !isSpinning && !isAutoSpining
+                    ? 'bg-casino-gold/20 text-casino-gold border-b-2 border-casino-gold translate-y-1 shadow-[inset_0_5px_15px_rgba(0,0,0,0.5),0_0_15px_rgba(255,215,0,0.4)]'
+                    : 'bg-[#151515] text-casino-ivory/50 border-b-4 border-[#0a0a0a] hover:bg-[#1a1a1a] hover:text-casino-ivory cursor-pointer active:translate-y-1 active:border-b-0'
+                }`}
               >
                 MAX BET
               </button>
             </div>
             
+            {/* Main Spin Button */}
             <button 
               onClick={isAutoSpining ? toggleAutoSpin : performSpin}
               disabled={(!isAutoSpining && (isSpinning || credits < bet))}
-              className={`w-full md:w-auto px-16 py-4 rounded-full font-serif text-2xl uppercase tracking-widest transition-all duration-300 shadow-[0_0_30px_rgba(255,0,127,0.4)] ${
+              className={`w-full md:w-auto px-16 py-5 rounded-2xl font-serif text-3xl tracking-widest transition-all duration-200 uppercase relative overflow-hidden group ${
                 (!isAutoSpining && (isSpinning || credits < bet))
-                ? 'bg-casino-ink text-casino-muted cursor-not-allowed opacity-50 shadow-none' 
-                : 'bg-casino-ember text-casino-ivory hover:scale-105 hover:bg-casino-ember/80 hover:shadow-[0_0_50px_rgba(255,0,127,0.8)] cursor-pointer'
+                ? 'bg-[#1a1a1a] text-casino-muted cursor-not-allowed border-b-4 border-[#0a0a0a]' 
+                : 'bg-casino-ember text-casino-ivory cursor-pointer border-b-8 border-rose-900 active:border-b-0 active:translate-y-2 shadow-[0_10px_30px_rgba(255,0,127,0.4)] hover:shadow-[0_15px_40px_rgba(255,0,127,0.6)] hover:bg-rose-600'
               }`}
             >
-              {isAutoSpining ? 'STOP' : (isSpinning ? 'SPINNING' : 'SPIN')}
+                {/* Glow effect on hover */}
+               {(!isSpinning && credits >= bet && !isAutoSpining) && (
+                  <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-[shine_1.5s_infinite]" />
+               )}
+              <span className="relative z-10" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                  {isAutoSpining ? 'STOP' : (isSpinning ? 'SPINNING' : 'SPIN')}
+              </span>
             </button>
           </div>
 
         </div>
       </div>
+
+      <style>{`
+        @keyframes shine {
+          100% { left: 200%; }
+        }
+      `}</style>
     </section>
   );
 }
