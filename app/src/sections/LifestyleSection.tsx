@@ -102,6 +102,8 @@ export default function LifestyleSection() {
         ref={imageRef}
         src="/images/slot_machine.png"
         alt="Slot machine spinning"
+        loading="lazy"
+        decoding="async"
         className="absolute left-0 top-0 w-[62vw] h-full object-cover transition-all duration-700 hover:brightness-110"
       />
 

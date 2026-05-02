@@ -107,6 +107,8 @@ export default function PeopleSection() {
         ref={portraitRef}
         src="/images/slot_bonus.png"
         alt="Bonus chest opening"
+        loading="lazy"
+        decoding="async"
         className="absolute top-[50vh] left-0 w-full h-[50vh] object-cover transition-all duration-1000 hover:brightness-125 hover:scale-[1.02]"
       />
 

@@ -104,6 +104,8 @@ export default function ClosingStatementSection({ onReserve }: ClosingStatementS
         ref={imageRef}
         src="/images/slot_neon.png"
         alt="Neon slots"
+        loading="lazy"
+        decoding="async"
         className="absolute left-[6vw] top-[18vh] w-[34vw] h-[46vh] object-cover rounded-xl shadow-card transition-all duration-700 hover:brightness-110"
       />
 

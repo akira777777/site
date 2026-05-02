@@ -120,6 +120,8 @@ export default function CollageSection() {
         ref={rouletteRef}
         src="/images/slot_symbols.png"
         alt="Slot symbols"
+        loading="lazy"
+        decoding="async"
         className="absolute left-[6vw] top-[10vh] w-[38vw] h-[30vh] object-cover rounded-xl shadow-card transition-all duration-700 hover:brightness-110"
       />
 
@@ -136,6 +138,8 @@ export default function CollageSection() {
         ref={cardsRef}
         src="/images/slot_neon.png"
         alt="Neon multipliers"
+        loading="lazy"
+        decoding="async"
         className="absolute right-[6vw] top-[10vh] w-[44vw] h-[34vh] object-cover rounded-xl shadow-card transition-all duration-700 hover:brightness-110"
       />
 
@@ -144,6 +148,8 @@ export default function CollageSection() {
         ref={chipsRef}
         src="/images/slot_coins.png"
         alt="Golden coins"
+        loading="lazy"
+        decoding="async"
         className="absolute right-[6vw] top-[52vh] w-[44vw] h-[36vh] object-cover rounded-xl shadow-card transition-all duration-700 hover:brightness-110"
       />
 

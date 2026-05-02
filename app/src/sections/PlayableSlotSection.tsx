@@ -46,6 +46,7 @@ export default function PlayableSlotSection() {
   const reelsRef = useRef<(HTMLDivElement | null)[]>([]);
   const autoSpinRef = useRef(false);
   const tickerRef = useRef<HTMLDivElement>(null);
+  const performSpinRef = useRef(() => {});
 
   const [grid, setGrid] = useState<string[][]>(getInitialGrid());
   const [isSpinning, setIsSpinning] = useState(false);
@@ -104,14 +105,14 @@ export default function PlayableSlotSection() {
   // Keyboard shortcut: Space to spin
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !isSpinning && (credits >= bet || isFreeSpinMode) && !isAutoSpin) {
+      if (e.code === 'Space') {
         e.preventDefault();
-        performSpin();
+        performSpinRef.current();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSpinning, credits, bet, isAutoSpin, isFreeSpinMode, performSpin]);
+  }, []);
   useEffect(() => {
     const id = setInterval(() => setWinnerIdx(i => (i + 1) % FAKE_WINNERS.length), 3000);
     return () => clearInterval(id);

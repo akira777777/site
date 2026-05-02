@@ -93,6 +93,8 @@ export default function PhilosophySection() {
         ref={imageRef}
         src="/images/slot_win.png"
         alt="Mega win celebration"
+        loading="lazy"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover transition-all duration-700 hover:brightness-110"
       />
 
