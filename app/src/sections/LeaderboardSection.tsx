@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Trophy, TrendingUp, Gem, Crown, Star } from 'lucide-react';
+import { Trophy, TrendingUp, Star } from 'lucide-react';
 
 const LEADERBOARD = [
   { rank: 1, name: 'SpinMaster',   total: 99400, wins: 47, badge: '👑', color: '#ffd700' },
@@ -29,14 +29,16 @@ export default function LeaderboardSection() {
     const section = sectionRef.current;
     if (!section) return;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     gsap.fromTo(section, { opacity: 0, y: 40 }, {
-      opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+      opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, ease: 'power2.out',
       scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
     });
 
     // Stagger rows in
     gsap.fromTo(section.querySelectorAll('.lb-row'), { x: -30, opacity: 0 }, {
-      x: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power2.out',
+      x: 0, opacity: 1, duration: prefersReducedMotion ? 0 : 0.5, stagger: prefersReducedMotion ? 0 : 0.08, ease: 'power2.out',
       scrollTrigger: { trigger: section, start: 'top 70%', toggleActions: 'play none none none' },
     });
 

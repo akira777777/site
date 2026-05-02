@@ -18,13 +18,15 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
     const footerLine = footerLineRef.current;
     if (!section || !content || !footerLine) return;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     gsap.fromTo(
       content,
       { y: 30, opacity: 0 },
       {
         y: 0,
         opacity: 1,
-        duration: 0.8,
+        duration: prefersReducedMotion ? 0 : 0.8,
         ease: 'power2.out',
         scrollTrigger: {
           trigger: section,
@@ -39,7 +41,7 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
       { scaleX: 0 },
       {
         scaleX: 1,
-        duration: 1,
+        duration: prefersReducedMotion ? 0 : 1,
         ease: 'power2.out',
         scrollTrigger: {
           trigger: footerLine,

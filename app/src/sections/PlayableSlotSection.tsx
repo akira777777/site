@@ -66,18 +66,29 @@ export default function PlayableSlotSection() {
 
   // Load credits
   useEffect(() => {
-    const saved = localStorage.getItem('casino_credits');
-    if (saved) { const v = parseInt(saved, 10); if (!isNaN(v)) { setCredits(v); setDisplayCredits(v); } }
+    try {
+      const saved = localStorage.getItem('casino_credits');
+      if (saved) { const v = parseInt(saved, 10); if (!isNaN(v)) { setCredits(v); setDisplayCredits(v); } }
+    } catch {
+      // localStorage unavailable
+    }
 
     const section = sectionRef.current;
     if (!section) return;
-    gsap.fromTo(section, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1,
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    gsap.fromTo(section, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 1,
       scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' } });
     return () => { ScrollTrigger.getAll().forEach(st => { if (st.vars.trigger === section) st.kill(); }); };
   }, []);
 
   // Save credits
-  useEffect(() => { localStorage.setItem('casino_credits', credits.toString()); }, [credits]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('casino_credits', credits.toString());
+    } catch {
+      // localStorage unavailable
+    }
+  }, [credits]);
 
   // Count-up
   useEffect(() => {
@@ -89,6 +100,18 @@ export default function PlayableSlotSection() {
 
   // Sync muted state with AudioEngine
   useEffect(() => { AudioEngine.setMuted(muted); }, [muted]);
+
+  // Keyboard shortcut: Space to spin
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !isSpinning && (credits >= bet || isFreeSpinMode) && !isAutoSpin) {
+        e.preventDefault();
+        performSpin();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSpinning, credits, bet, isAutoSpin, isFreeSpinMode, performSpin]);
   useEffect(() => {
     const id = setInterval(() => setWinnerIdx(i => (i + 1) % FAKE_WINNERS.length), 3000);
     return () => clearInterval(id);
@@ -108,7 +131,12 @@ export default function PlayableSlotSection() {
   const resetCredits = () => { if (!isSpinning) { setCredits(1000); setMessage('CREDITS RESET!'); } };
 
   const performSpin = useCallback(() => {
-    const currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
+    let currentCredits = 1000;
+    try {
+      currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
+    } catch {
+      // localStorage unavailable
+    }
     const activeBet = isFreeSpinMode ? 0 : bet;
 
     if (!isFreeSpinMode && currentCredits < bet) {
@@ -314,6 +342,7 @@ export default function PlayableSlotSection() {
             <div className="flex gap-3 w-full md:w-auto flex-wrap">
               {/* Auto Spin */}
               <button onClick={() => { setIsAutoSpin(p => { const n = !p; if (n && !isSpinning) setTimeout(performSpin, 100); return n; }); }}
+                aria-pressed={isAutoSpin}
                 className={`flex-1 md:flex-none px-6 py-4 rounded-xl font-mono text-sm tracking-widest transition-all cursor-pointer ${
                   isAutoSpin ? 'bg-casino-neon/20 text-casino-neon border-b-2 border-casino-neon translate-y-1 shadow-[0_0_15px_rgba(0,243,255,0.4)]'
                   : 'bg-[#151515] text-casino-ivory/50 border-b-4 border-[#0a0a0a] hover:bg-[#1a1a1a] hover:text-casino-ivory active:translate-y-1 active:border-b-0'}`}>
@@ -338,6 +367,7 @@ export default function PlayableSlotSection() {
             {/* SPIN Button */}
             <button onClick={isAutoSpin ? () => setIsAutoSpin(false) : performSpin}
               disabled={!isAutoSpin && (isSpinning || credits < bet) && !isFreeSpinMode}
+              aria-label={isAutoSpin ? 'Stop auto spin' : isSpinning ? 'Spinning' : isFreeSpinMode ? 'Free spin' : 'Spin reels'}
               className={`w-full md:w-auto px-16 py-5 rounded-2xl font-serif text-3xl tracking-widest transition-all duration-200 uppercase relative overflow-hidden group ${
                 (!isAutoSpin && (isSpinning || credits < bet) && !isFreeSpinMode)
                 ? 'bg-[#1a1a1a] text-casino-muted cursor-not-allowed border-b-4 border-[#0a0a0a]'

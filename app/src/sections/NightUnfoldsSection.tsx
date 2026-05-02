@@ -15,13 +15,15 @@ export default function NightUnfoldsSection() {
     const ticker = tickerRef.current;
     if (!section || !image || !headline || !ticker) return;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: 'top top',
         end: '+=90%',
         pin: true,
-        scrub: 0.6,
+        scrub: prefersReducedMotion ? false : 0.6,
       },
     });
 
@@ -91,6 +93,8 @@ export default function NightUnfoldsSection() {
         ref={imageRef}
         src="/images/slot_spins.png"
         alt="Free Spins Bonus"
+        loading="lazy"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover transition-all duration-[2s] hover:brightness-125 hover:saturate-150"
       />
 

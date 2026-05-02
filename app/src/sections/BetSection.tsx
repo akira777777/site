@@ -104,6 +104,8 @@ export default function BetSection() {
         ref={imageRef}
         src="/images/slot_jackpot.png"
         alt="Jackpot win"
+        loading="lazy"
+        decoding="async"
         className="absolute top-0 left-0 w-full h-[52vh] object-cover transition-all duration-700 hover:brightness-110 hover:saturate-[1.2]"
       />
 

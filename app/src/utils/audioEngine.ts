@@ -24,7 +24,7 @@ export const AudioEngine = (() => {
       gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
       osc.start(ac.currentTime);
       osc.stop(ac.currentTime + duration);
-    } catch (_) { /* user hasn't interacted yet */ }
+    } catch { /* user hasn't interacted yet */ }
   };
 
   return {
