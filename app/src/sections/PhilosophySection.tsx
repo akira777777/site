@@ -85,6 +85,7 @@ export default function PhilosophySection() {
   return (
     <section
       ref={sectionRef}
+      id="philosophy"
       className="relative w-full h-screen overflow-hidden bg-casino-ink"
       style={{ zIndex: 70 }}
     >

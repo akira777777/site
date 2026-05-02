@@ -96,6 +96,7 @@ export default function BetSection() {
   return (
     <section
       ref={sectionRef}
+      id="bet"
       className="relative w-full h-screen overflow-hidden bg-casino-ink"
       style={{ zIndex: 20 }}
     >

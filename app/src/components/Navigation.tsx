@@ -8,14 +8,40 @@ interface NavigationProps {
 export default function Navigation({ onReserve }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string>('');
+  const [progress, setProgress] = useState(0);
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(maxScroll > 0 ? window.scrollY / maxScroll : 0);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Active section tracking via IntersectionObserver
+  useEffect(() => {
+    const sectionIds = ['play', 'bet', 'philosophy', 'contact'];
+    const elements = sectionIds.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null);
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0 && visible[0].target.id) {
+          setActiveId(visible[0].target.id);
+        }
+      },
+      { threshold: [0.25, 0.5, 0.75], rootMargin: '-40% 0px -40% 0px' }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -42,6 +68,17 @@ export default function Navigation({ onReserve }: NavigationProps) {
         scrolled ? 'bg-casino-ink/65 backdrop-blur-md' : 'bg-transparent'
       }`}
     >
+      {/* Scroll progress bar */}
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-transparent">
+        <div
+          className="h-full bg-casino-neon transition-[width] duration-100 ease-out"
+          style={{
+            width: `${progress * 100}%`,
+            boxShadow: '0 0 8px rgba(176,38,255,0.8)',
+          }}
+        />
+      </div>
+
       <div className="flex items-center justify-between px-[6vw] py-5">
         <a
           href="#"
@@ -59,16 +96,24 @@ export default function Navigation({ onReserve }: NavigationProps) {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
-          {navItems.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              onClick={(e) => handleNavClick(e, item.id)}
-              className="font-mono text-xs text-casino-muted hover:text-casino-ivory transition-colors tracking-wide uppercase"
-            >
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) => {
+            const isActive = activeId === item.id;
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleNavClick(e, item.id)}
+                className={`relative font-mono text-xs tracking-wide uppercase transition-colors ${
+                  isActive ? 'text-casino-neon' : 'text-casino-muted hover:text-casino-ivory'
+                }`}
+              >
+                {item.label}
+                {isActive && (
+                  <span className="absolute -bottom-1 left-0 w-full h-px bg-casino-neon" style={{ boxShadow: '0 0 6px rgba(176,38,255,0.8)' }} />
+                )}
+              </a>
+            );
+          })}
           <button
             onClick={onReserve}
             className="font-mono text-xs px-5 py-2 bg-casino-neon/10 border border-casino-neon text-casino-neon rounded-full hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_15px_rgba(0,243,255,0.6)] transition-all uppercase tracking-wide cursor-pointer"
@@ -82,6 +127,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
           className="md:hidden text-casino-ivory p-1 cursor-pointer"
           onClick={() => setMobileOpen((p) => !p)}
           aria-label="Toggle menu"
+          aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -92,18 +138,24 @@ export default function Navigation({ onReserve }: NavigationProps) {
         className={`md:hidden absolute top-full left-0 w-full bg-casino-ink/95 backdrop-blur-lg border-b border-casino-ivory/10 transition-all duration-300 overflow-hidden ${
           mobileOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}
+        aria-hidden={!mobileOpen}
       >
         <div className="flex flex-col items-center gap-6 py-8">
-          {navItems.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              onClick={(e) => handleNavClick(e, item.id)}
-              className="font-mono text-sm text-casino-muted hover:text-casino-ivory transition-colors tracking-wide uppercase"
-            >
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) => {
+            const isActive = activeId === item.id;
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleNavClick(e, item.id)}
+                className={`font-mono text-sm tracking-wide uppercase transition-colors ${
+                  isActive ? 'text-casino-neon' : 'text-casino-muted hover:text-casino-ivory'
+                }`}
+              >
+                {item.label}
+              </a>
+            );
+          })}
           <button
             onClick={() => {
               setMobileOpen(false);

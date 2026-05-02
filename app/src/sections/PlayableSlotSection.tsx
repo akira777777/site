@@ -102,17 +102,7 @@ export default function PlayableSlotSection() {
   // Sync muted state with AudioEngine
   useEffect(() => { AudioEngine.setMuted(muted); }, [muted]);
 
-  // Keyboard shortcut: Space to spin
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        performSpinRef.current();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Rotate live winners ticker
   useEffect(() => {
     const id = setInterval(() => setWinnerIdx(i => (i + 1) % FAKE_WINNERS.length), 3000);
     return () => clearInterval(id);
@@ -210,10 +200,23 @@ export default function PlayableSlotSection() {
       setIsSpinning(false);
 
       if (autoSpinRef.current || (isFreeSpinMode && freeSpins > 1)) {
-        setTimeout(() => { if (autoSpinRef.current || isFreeSpinMode) performSpin(); }, 1500);
+        setTimeout(() => { if (autoSpinRef.current || isFreeSpinMode) performSpinRef.current(); }, 1500);
       }
     }, 2600);
   }, [bet, freeSpins, isFreeSpinMode]);
+  performSpinRef.current = performSpin;
+
+  // Keyboard shortcut: Space to spin
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !isSpinning && (credits >= bet || isFreeSpinMode) && !isAutoSpin) {
+        e.preventDefault();
+        performSpin();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSpinning, credits, bet, isFreeSpinMode, isAutoSpin, performSpin]);
 
   const fireConfetti = () => {
     const end = Date.now() + 3000;
@@ -299,6 +302,7 @@ export default function PlayableSlotSection() {
             <div className="flex flex-col items-center">
               <span className="text-casino-muted text-[10px] tracking-widest uppercase mb-1">Bet</span>
               <button onClick={toggleBet} disabled={isSpinning || isAutoSpin || isFreeSpinMode}
+                aria-label={`Current bet is ${isFreeSpinMode ? 'free' : bet}. Click to change bet amount.`}
                 className={`font-mono text-2xl text-casino-neon font-bold px-6 py-1 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${!isSpinning && !isAutoSpin ? 'hover:bg-casino-neon/10 cursor-pointer' : ''}`}
                 style={{ textShadow: '0 0 15px rgba(0,243,255,0.8)' }}>
                 {isFreeSpinMode ? 'FREE' : bet}
@@ -344,6 +348,7 @@ export default function PlayableSlotSection() {
               {/* Auto Spin */}
               <button onClick={() => { setIsAutoSpin(p => { const n = !p; if (n && !isSpinning) setTimeout(performSpin, 100); return n; }); }}
                 aria-pressed={isAutoSpin}
+                aria-label={isAutoSpin ? 'Stop auto spin' : 'Start auto spin'}
                 className={`flex-1 md:flex-none px-6 py-4 rounded-xl font-mono text-sm tracking-widest transition-all cursor-pointer ${
                   isAutoSpin ? 'bg-casino-neon/20 text-casino-neon border-b-2 border-casino-neon translate-y-1 shadow-[0_0_15px_rgba(0,243,255,0.4)]'
                   : 'bg-[#151515] text-casino-ivory/50 border-b-4 border-[#0a0a0a] hover:bg-[#1a1a1a] hover:text-casino-ivory active:translate-y-1 active:border-b-0'}`}>
@@ -351,6 +356,7 @@ export default function PlayableSlotSection() {
               </button>
               {/* Max Bet */}
               <button onClick={setMaxBet} disabled={isSpinning || isAutoSpin || isFreeSpinMode || bet === 100}
+                aria-label="Set maximum bet to 100"
                 className={`flex-1 md:flex-none px-6 py-4 rounded-xl font-mono text-sm tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                   bet === 100 && !isSpinning ? 'bg-casino-gold/20 text-casino-gold border-b-2 border-casino-gold translate-y-1'
                   : 'bg-[#151515] text-casino-ivory/50 border-b-4 border-[#0a0a0a] hover:bg-[#1a1a1a] hover:text-casino-ivory cursor-pointer active:translate-y-1 active:border-b-0'}`}>
@@ -358,6 +364,8 @@ export default function PlayableSlotSection() {
               </button>
               {/* Paytable */}
               <button onClick={() => setShowPaytable(p => !p)}
+                aria-label={showPaytable ? 'Hide paytable' : 'Show paytable'}
+                aria-pressed={showPaytable}
                 className={`flex-1 md:flex-none px-6 py-4 rounded-xl font-mono text-sm tracking-widest transition-all cursor-pointer ${
                   showPaytable ? 'bg-casino-ember/20 text-casino-ember border-b-2 border-casino-ember translate-y-1'
                   : 'bg-[#151515] text-casino-ivory/50 border-b-4 border-[#0a0a0a] hover:bg-[#1a1a1a] hover:text-casino-ivory active:translate-y-1 active:border-b-0'}`}>
@@ -388,12 +396,15 @@ export default function PlayableSlotSection() {
           <div className="flex justify-between items-center mt-5 px-4">
             {/* Sound toggle */}
             <button onClick={() => setMuted(p => !p)}
+              aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+              aria-pressed={muted}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111] border border-white/5 text-casino-muted hover:text-casino-ivory transition-all cursor-pointer">
               {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               <span className="font-mono text-xs">{muted ? 'MUTED' : 'SOUND ON'}</span>
             </button>
             {/* Reset */}
             <button onClick={resetCredits} disabled={isSpinning}
+              aria-label="Reset credits to 1000"
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111] border border-white/5 text-casino-muted hover:text-casino-ember transition-all cursor-pointer disabled:opacity-50">
               <RotateCcw className="w-4 h-4" />
               <span className="font-mono text-xs">RESET (1,000)</span>
