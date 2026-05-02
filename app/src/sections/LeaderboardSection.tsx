@@ -45,12 +45,34 @@ export default function LeaderboardSection() {
     return () => { ScrollTrigger.getAll().forEach(st => { if (st.vars.trigger === section) st.kill(); }); };
   }, []);
 
-  // Cycle highlight
+  // Cycle highlight — pause when off-screen
   useEffect(() => {
-    const id = setInterval(() => {
-      setHighlightRank(r => r === null ? 1 : r >= 7 ? null : r! + 1);
-    }, 2000);
-    return () => clearInterval(id);
+    const section = sectionRef.current;
+    if (!section) return;
+
+    let id: ReturnType<typeof setInterval>;
+    const startInterval = () => {
+      id = setInterval(() => {
+        setHighlightRank(r => r === null ? 1 : r >= 7 ? null : r! + 1);
+      }, 2000);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          startInterval();
+        } else {
+          clearInterval(id);
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(section);
+
+    return () => {
+      clearInterval(id);
+      observer.disconnect();
+    };
   }, []);
 
   return (

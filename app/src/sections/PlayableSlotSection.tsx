@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import confetti from 'canvas-confetti';
-import { Gem, Crown, Bell, Star, Flame, Coins, Volume2, VolumeX, RotateCcw, Trophy } from 'lucide-react';
+import { Gem, Crown, Bell, Star, Flame, Coins, Volume2, VolumeX, RotateCcw, Trophy, X } from 'lucide-react';
 import { AudioEngine } from '../utils/audioEngine';
 
 const SYMBOLS_DATA = [
@@ -47,6 +47,7 @@ export default function PlayableSlotSection() {
   const autoSpinRef = useRef(false);
   const tickerRef = useRef<HTMLDivElement>(null);
   const performSpinRef = useRef(() => {});
+  const timeoutsRef = useRef<number[]>([]);
 
   const [grid, setGrid] = useState<string[][]>(getInitialGrid());
   const [isSpinning, setIsSpinning] = useState(false);
@@ -79,7 +80,10 @@ export default function PlayableSlotSection() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     gsap.fromTo(section, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 1,
       scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' } });
-    return () => { ScrollTrigger.getAll().forEach(st => { if (st.vars.trigger === section) st.kill(); }); };
+    return () => {
+      clearSpinTimeouts();
+      ScrollTrigger.getAll().forEach(st => { if (st.vars.trigger === section) st.kill(); });
+    };
   }, []);
 
   // Save credits
@@ -121,7 +125,13 @@ export default function PlayableSlotSection() {
   const setMaxBet = () => { if (!isSpinning && !isFreeSpinMode) setBet(100); };
   const resetCredits = () => { if (!isSpinning) { setCredits(1000); setMessage('CREDITS RESET!'); } };
 
+  const clearSpinTimeouts = () => {
+    timeoutsRef.current.forEach(id => clearTimeout(id));
+    timeoutsRef.current = [];
+  };
+
   const performSpin = useCallback(() => {
+    clearSpinTimeouts();
     let currentCredits = 1000;
     try {
       currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
@@ -149,7 +159,7 @@ export default function PlayableSlotSection() {
     const newGrid = getInitialGrid();
 
     [0, 1, 2].forEach((col) => {
-      setTimeout(() => {
+      timeoutsRef.current.push(setTimeout(() => {
         const reel = reelsRef.current[col];
         if (reel) { gsap.killTweensOf(reel); gsap.fromTo(reel, { y: '-10%' }, { y: '0%', duration: 0.3, ease: 'bounce.out' }); }
         AudioEngine.reelStop(col);
@@ -158,10 +168,10 @@ export default function PlayableSlotSection() {
           g[0][col] = newGrid[0][col]; g[1][col] = newGrid[1][col]; g[2][col] = newGrid[2][col];
           return g;
         });
-      }, 1000 + col * 500);
+      }, 1000 + col * 500));
     });
 
-    setTimeout(() => {
+    timeoutsRef.current.push(setTimeout(() => {
       let totalWin = 0;
       const matched: number[][][] = [];
       let crownCount = 0;
@@ -200,23 +210,26 @@ export default function PlayableSlotSection() {
       setIsSpinning(false);
 
       if (autoSpinRef.current || (isFreeSpinMode && freeSpins > 1)) {
-        setTimeout(() => { if (autoSpinRef.current || isFreeSpinMode) performSpinRef.current(); }, 1500);
+        timeoutsRef.current.push(setTimeout(() => { if (autoSpinRef.current || isFreeSpinMode) performSpinRef.current(); }, 1500));
       }
-    }, 2600);
+    }, 2600));
   }, [bet, freeSpins, isFreeSpinMode]);
   performSpinRef.current = performSpin;
 
-  // Keyboard shortcut: Space to spin
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !isSpinning && (credits >= bet || isFreeSpinMode) && !isAutoSpin) {
         e.preventDefault();
         performSpin();
       }
+      if (e.code === 'Escape' && showPaytable) {
+        setShowPaytable(false);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSpinning, credits, bet, isFreeSpinMode, isAutoSpin, performSpin]);
+  }, [isSpinning, credits, bet, isFreeSpinMode, isAutoSpin, performSpin, showPaytable]);
 
   const fireConfetti = () => {
     const end = Date.now() + 3000;
@@ -366,6 +379,7 @@ export default function PlayableSlotSection() {
               <button onClick={() => setShowPaytable(p => !p)}
                 aria-label={showPaytable ? 'Hide paytable' : 'Show paytable'}
                 aria-pressed={showPaytable}
+                aria-expanded={showPaytable}
                 className={`flex-1 md:flex-none px-6 py-4 rounded-xl font-mono text-sm tracking-widest transition-all cursor-pointer ${
                   showPaytable ? 'bg-casino-ember/20 text-casino-ember border-b-2 border-casino-ember translate-y-1'
                   : 'bg-[#151515] text-casino-ivory/50 border-b-4 border-[#0a0a0a] hover:bg-[#1a1a1a] hover:text-casino-ivory active:translate-y-1 active:border-b-0'}`}>
@@ -414,7 +428,14 @@ export default function PlayableSlotSection() {
 
         {/* Paytable Panel */}
         {showPaytable && (
-          <div className="w-full max-w-4xl bg-black/60 backdrop-blur-xl border border-casino-ivory/10 rounded-3xl p-8 mt-2">
+          <div className="relative w-full max-w-4xl bg-black/60 backdrop-blur-xl border border-casino-ivory/10 rounded-3xl p-8 mt-2">
+            <button
+              onClick={() => setShowPaytable(false)}
+              aria-label="Close paytable"
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/5 text-casino-muted hover:text-casino-ivory hover:bg-white/10 transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
             <h3 className="font-serif text-2xl text-casino-gold uppercase mb-6 text-center" style={{ textShadow: '0 0 10px rgba(255,215,0,0.5)' }}>
               Paytable — Match 3 in a Row
             </h3>

@@ -13,13 +13,20 @@ export default function Navigation({ onReserve }: NavigationProps) {
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    let rafId: number;
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(maxScroll > 0 ? window.scrollY / maxScroll : 0);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        setProgress(maxScroll > 0 ? window.scrollY / maxScroll : 0);
+      });
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Active section tracking via IntersectionObserver
