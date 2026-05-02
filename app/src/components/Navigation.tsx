@@ -63,9 +63,21 @@ export default function Navigation({ onReserve }: NavigationProps) {
     };
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string, href?: string) => {
+    if (href) {
+      // Allow default navigation for href links
+      return;
+    }
+    
     e.preventDefault();
     setMobileOpen(false);
+    
+    // If we're not on the home page and trying to navigate to a section, go to home first
+    if (window.location.pathname !== '/' && id) {
+      window.location.href = `/#${id}`;
+      return;
+    }
+
     const el = document.getElementById(id);
     if (el) {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -76,7 +88,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
   const navItems = [
     { label: 'Play Now', id: 'play' },
     { label: 'High Stakes', id: 'bet' },
-    { label: 'Philosophy', id: 'philosophy' },
+    { label: 'Superpowers', id: 'superpowers', href: '/superpowers' },
     { label: 'Support', id: 'contact' },
   ];
 
@@ -96,12 +108,14 @@ export default function Navigation({ onReserve }: NavigationProps) {
 
       <div className="flex items-center justify-between px-[6vw] py-5">
         <a
-          href="#"
+          href="/"
           onClick={(e) => {
-            e.preventDefault();
-            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-            setMobileOpen(false);
+            if (window.location.pathname === '/') {
+              e.preventDefault();
+              const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+              setMobileOpen(false);
+            }
           }}
           className="font-serif text-casino-ivory text-xl tracking-tight hover:opacity-100 opacity-80 transition-opacity uppercase [text-shadow:0_0_10px_rgba(176,38,255,0.8)]"
         >
@@ -115,8 +129,8 @@ export default function Navigation({ onReserve }: NavigationProps) {
             return (
               <a
                 key={item.id}
-                href={`#${item.id}`}
-                onClick={(e) => handleNavClick(e, item.id)}
+                href={item.href || `/#${item.id}`}
+                onClick={(e) => handleNavClick(e, item.id, item.href)}
                 className={`relative font-mono text-sm tracking-wide uppercase transition-all duration-300 ${
                   isActive ? 'text-casino-neon [text-shadow:0_0_10px_rgba(176,38,255,0.8)]' : 'text-casino-muted hover:text-casino-ivory hover:[text-shadow:0_0_8px_rgba(255,255,255,0.6)]'
                 }`}
@@ -160,8 +174,8 @@ export default function Navigation({ onReserve }: NavigationProps) {
             return (
               <a
                 key={item.id}
-                href={`#${item.id}`}
-                onClick={(e) => handleNavClick(e, item.id)}
+                href={item.href || `/#${item.id}`}
+                onClick={(e) => handleNavClick(e, item.id, item.href)}
                 className={`font-mono text-sm tracking-wide uppercase transition-colors ${
                   isActive ? 'text-casino-neon' : 'text-casino-muted hover:text-casino-ivory'
                 }`}
