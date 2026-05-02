@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 20% 4%;
+    --foreground: 36 23% 94%;
+    --card: 240 18% 8%;
+    --card-foreground: 36 23% 94%;
+    --popover: 240 18% 8%;
+    --popover-foreground: 36 23% 94%;
+    --primary: 11 62% 46%;
+    --primary-foreground: 36 23% 94%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 36 23% 94%;
+    --muted: 240 10% 15%;
+    --muted-foreground: 30 8% 68%;
+    --accent: 11 62% 46%;
+    --accent-foreground: 36 23% 94%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 8% 18%;
+    --input: 240 8% 18%;
+    --ring: 11 62% 46%;
+    --radius: 0.625rem;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bodoni Moda', 'Playfair Display', serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .font-mono {
+    font-family: 'IBM Plex Mono', 'SF Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-marquee {
+    animation: none !important;
+  }
+}
