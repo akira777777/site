@@ -16,8 +16,3 @@ export const SuperpowersFeature: React.FC = () => {
     </SuperpowerProvider>
   );
 };
-
-export * from './types';
-export * from './api/superpowersApi';
-export * from './hooks/useSuperpowers';
-export * from './context/SuperpowerContext';

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 interface NavigationProps {
@@ -7,6 +8,7 @@ interface NavigationProps {
 }
 
 export default function Navigation({ onReserve }: NavigationProps) {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>('');
@@ -74,7 +76,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
     
     // If we're not on the home page and trying to navigate to a section, go to home first
     if (window.location.pathname !== '/' && id) {
-      window.location.href = `/#${id}`;
+      navigate(`/#${id}`);
       return;
     }
 

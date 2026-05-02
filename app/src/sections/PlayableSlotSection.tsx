@@ -41,6 +41,22 @@ const getRandomSymbol = () => {
 
 const getInitialGrid = () => Array(3).fill(null).map(() => Array(3).fill(null).map(() => getRandomSymbol().id));
 
+const getStoredCredits = () => {
+  try {
+    const saved = localStorage.getItem('casino_credits');
+    if (!saved) return 1000;
+
+    const parsed = parseInt(saved, 10);
+    if (!isNaN(parsed) && parsed >= 0) return parsed;
+
+    localStorage.removeItem('casino_credits');
+  } catch {
+    // localStorage unavailable
+  }
+
+  return 1000;
+};
+
 export default function PlayableSlotSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const reelsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -52,8 +68,8 @@ export default function PlayableSlotSection() {
   const [grid, setGrid] = useState<string[][]>(getInitialGrid());
   const [isSpinning, setIsSpinning] = useState(false);
   const [isAutoSpin, setIsAutoSpin] = useState(false);
-  const [credits, setCredits] = useState(1000);
-  const [displayCredits, setDisplayCredits] = useState(1000);
+  const [credits, setCredits] = useState(getStoredCredits);
+  const [displayCredits, setDisplayCredits] = useState(getStoredCredits);
   const [bet, setBet] = useState(10);
   const [lastWin, setLastWin] = useState(0);
   const [message, setMessage] = useState('SPIN TO WIN!');
@@ -64,21 +80,24 @@ export default function PlayableSlotSection() {
   const [showPaytable, setShowPaytable] = useState(false);
   const [winnerIdx, setWinnerIdx] = useState(0);
 
+  const clearSpinTimeouts = useCallback(() => {
+    timeoutsRef.current.forEach(id => clearTimeout(id));
+    timeoutsRef.current = [];
+  }, []);
+
+  const fireConfetti = useCallback(() => {
+    const end = Date.now() + 3000;
+    const frame = () => {
+      confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#b026ff','#ffd700','#00f3ff'] });
+      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#b026ff','#ffd700','#00f3ff'] });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+  }, []);
+
   useEffect(() => { autoSpinRef.current = isAutoSpin; }, [isAutoSpin]);
 
-  // Load credits
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('casino_credits');
-      if (saved) {
-        const v = parseInt(saved, 10);
-        if (!isNaN(v) && v >= 0) { setCredits(v); setDisplayCredits(v); }
-        else { localStorage.removeItem('casino_credits'); }
-      }
-    } catch {
-      // localStorage unavailable
-    }
-
     const section = sectionRef.current;
     if (!section) return;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -88,7 +107,7 @@ export default function PlayableSlotSection() {
       clearSpinTimeouts();
       ScrollTrigger.getAll().forEach(st => { if (st.vars.trigger === section) st.kill(); });
     };
-  }, []);
+  }, [clearSpinTimeouts]);
 
   // Save credits
   useEffect(() => {
@@ -128,11 +147,6 @@ export default function PlayableSlotSection() {
   const toggleBet = () => { if (!isSpinning && !isFreeSpinMode) setBet(p => p === 10 ? 50 : p === 50 ? 100 : 10); };
   const setMaxBet = () => { if (!isSpinning && !isFreeSpinMode) setBet(100); };
   const resetCredits = () => { if (!isSpinning) { setCredits(1000); setMessage('CREDITS RESET!'); } };
-
-  const clearSpinTimeouts = () => {
-    timeoutsRef.current.forEach(id => clearTimeout(id));
-    timeoutsRef.current = [];
-  };
 
   const performSpin = useCallback(() => {
     clearSpinTimeouts();
@@ -219,8 +233,11 @@ export default function PlayableSlotSection() {
         timeoutsRef.current.push(setTimeout(() => { if (autoSpinRef.current || isFreeSpinMode) performSpinRef.current(); }, 1500));
       }
     }, 2600));
-  }, [bet, freeSpins, isFreeSpinMode]);
-  performSpinRef.current = performSpin;
+  }, [bet, clearSpinTimeouts, fireConfetti, freeSpins, isFreeSpinMode]);
+
+  useEffect(() => {
+    performSpinRef.current = performSpin;
+  }, [performSpin]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -236,16 +253,6 @@ export default function PlayableSlotSection() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isSpinning, credits, bet, isFreeSpinMode, isAutoSpin, performSpin, showPaytable]);
-
-  const fireConfetti = () => {
-    const end = Date.now() + 3000;
-    const frame = () => {
-      confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#b026ff','#ffd700','#00f3ff'] });
-      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#b026ff','#ffd700','#00f3ff'] });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
-  };
 
   const isCellWinning = (r: number, c: number) =>
     winningLines.some(line => line.some(([lr, lc]) => lr === r && lc === c));

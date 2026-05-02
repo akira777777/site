@@ -2,9 +2,10 @@ import React, { useRef } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useSuperpowers } from '../hooks/useSuperpowers';
 import { SuperpowerCard } from './SuperpowerCard';
-import { useSuperpowerContext } from '../context/SuperpowerContext';
+import { useSuperpowerContext } from '../context/superpowerContextValue';
 import type { Superpower } from '../types';
 
 /**
@@ -41,9 +42,7 @@ export const SuperpowerList: React.FC = () => {
     );
 
     return () => {
-      // Cleanup ScrollTrigger instances
-      const triggers = (gsap as any).ScrollTrigger.getAll();
-      triggers.forEach((trigger: any) => trigger.kill());
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
   }, { scope: containerRef });
 
