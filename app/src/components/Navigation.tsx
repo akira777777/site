@@ -47,7 +47,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
 
   return (
     <nav
-      className={`fixed left-0 top-0 z-50 w-full transition ${
+      className={`fixed left-0 top-0 z-[1000] w-full transition ${
         scrolled ? 'border-b border-casino-ivory/10 bg-casino-ink/88 backdrop-blur-xl' : 'bg-casino-ink/20 backdrop-blur-sm'
       }`}
     >
