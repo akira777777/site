@@ -269,10 +269,9 @@ export default function PlayableSlotSection() {
 
   return (
     <section ref={sectionRef} id="play"
-      className="relative w-full min-h-screen bg-casino-ink py-[10vh] flex flex-col items-center justify-center overflow-hidden"
-      style={{ zIndex: 90 }}>
+      className=" z-[]">
 
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(176,38,255,0.06) 0%, transparent 60%)' }} />
+      <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_50%_50%,_rgba(176,38,255,0.06)_0%,_transparent_60%)]" />
 
       <div className="relative z-10 w-full max-w-5xl mx-auto px-[6vw] flex flex-col items-center gap-6">
 
@@ -289,7 +288,7 @@ export default function PlayableSlotSection() {
 
         {/* Header */}
         <div className="text-center">
-          <h2 className="font-serif text-5xl md:text-7xl text-casino-ivory uppercase" style={{ textShadow: '0 0 30px rgba(176,38,255,0.8)' }}>
+          <h2 className="font-serif text-5xl md:text-7xl text-casino-ivory uppercase [text-shadow:0_0_30px_rgba(176,38,255,0.8)]">
             Cyber Slots
           </h2>
           {isFreeSpinMode && (
@@ -314,7 +313,7 @@ export default function PlayableSlotSection() {
           <div className="flex justify-between items-center mb-8 px-8 py-4 rounded-2xl bg-black/60 shadow-inner border-t border-white/10">
             <div className="flex flex-col">
               <span className="text-casino-muted text-[10px] tracking-widest uppercase mb-1">Balance</span>
-              <span className="text-casino-ivory font-mono text-2xl" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
+              <span className="text-casino-ivory font-mono text-2xl [text-shadow:0_0_10px_rgba(255,255,255,0.5)]">
                 {displayCredits.toLocaleString()}
               </span>
             </div>
@@ -329,7 +328,7 @@ export default function PlayableSlotSection() {
             </div>
             <div className="flex flex-col items-end">
               <span className="text-casino-muted text-[10px] tracking-widest uppercase mb-1">Last Win</span>
-              <span className="text-casino-gold font-mono text-2xl" style={{ textShadow: '0 0 15px rgba(255,215,0,0.8)' }}>
+              <span className="text-casino-gold font-mono text-2xl [text-shadow:0_0_15px_rgba(255,215,0,0.8)]">
                 {lastWin > 0 ? `+${lastWin.toLocaleString()}` : '0'}
               </span>
             </div>
@@ -406,7 +405,7 @@ export default function PlayableSlotSection() {
               {(!isSpinning && !isAutoSpin) && (
                 <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-[shine_1.5s_infinite]" />
               )}
-              <span className="relative z-10" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              <span className="relative z-10 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
                 {isAutoSpin ? 'STOP' : isSpinning ? 'SPINNING' : isFreeSpinMode ? `FREE x${freeSpins}` : 'SPIN'}
               </span>
             </button>
@@ -442,7 +441,7 @@ export default function PlayableSlotSection() {
             >
               <X className="w-5 h-5" />
             </button>
-            <h3 className="font-serif text-2xl text-casino-gold uppercase mb-6 text-center" style={{ textShadow: '0 0 10px rgba(255,215,0,0.5)' }}>
+            <h3 className="font-serif text-2xl text-casino-gold uppercase mb-6 text-center [text-shadow:0_0_10px_rgba(255,215,0,0.5)]">
               Paytable — Match 3 in a Row
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

@@ -86,8 +86,7 @@ export default function PhilosophySection() {
     <section
       ref={sectionRef}
       id="philosophy"
-      className="relative w-full h-screen overflow-hidden bg-casino-ink"
-      style={{ zIndex: 70 }}
+      className=" z-[]"
     >
       {/* Full-bleed background */}
       <img
@@ -115,7 +114,7 @@ export default function PhilosophySection() {
         <p className="font-mono text-xs text-casino-muted mb-3 tracking-widest uppercase">
           Max Payout
         </p>
-        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-casino-gold uppercase leading-[1.1]" style={{ textShadow: '0 0 15px rgba(255, 215, 0, 0.4)' }}>
+        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-casino-gold uppercase leading-[1.1] [text-shadow:0_0_15px_rgba(255,_215,_0,_0.4)]">
           The Mega Win Awaits.
         </h2>
       </div>

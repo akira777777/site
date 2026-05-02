@@ -77,11 +77,10 @@ export default function LeaderboardSection() {
 
   return (
     <section ref={sectionRef} id="jackpots"
-      className="relative w-full bg-casino-charcoal py-[10vh] overflow-hidden"
-      style={{ zIndex: 91 }}>
+      className=" z-[]">
 
       {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(176,38,255,0.08) 0%, transparent 60%)' }} />
+      <div className="absolute inset-0 pointer-events-none [background:radial-gradient(ellipse_at_50%_0%,_rgba(176,38,255,0.08)_0%,_transparent_60%)]" />
 
       <div className="relative z-10 w-full max-w-5xl mx-auto px-[6vw]">
 
@@ -89,12 +88,11 @@ export default function LeaderboardSection() {
         <div className="flex items-center justify-between mb-10">
           <div>
             <p className="font-mono text-xs text-casino-muted uppercase tracking-widest mb-2">Global Rankings</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase"
-              style={{ textShadow: '0 0 20px rgba(255,215,0,0.3)' }}>
+            <h2 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase [text-shadow:0_0_20px_rgba(255,215,0,0.3)]">
               Hall of Fame
             </h2>
           </div>
-          <Trophy className="w-14 h-14 text-casino-gold opacity-60" style={{ filter: 'drop-shadow(0 0 15px #ffd700)' }} />
+          <Trophy className="w-14 h-14 text-casino-gold opacity-60 [filter:drop-shadow(0_0_15px_#ffd700)]" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -170,7 +168,7 @@ export default function LeaderboardSection() {
             <div className="mt-2 p-5 rounded-2xl bg-casino-neon/5 border border-casino-neon/20 text-center">
               <Star className="w-8 h-8 text-casino-neon mx-auto mb-2 opacity-70" />
               <p className="font-mono text-xs text-casino-muted mb-1">Your current rank</p>
-              <p className="font-serif text-2xl text-casino-neon" style={{ textShadow: '0 0 10px rgba(0,243,255,0.6)' }}>#—</p>
+              <p className="font-serif text-2xl text-casino-neon [text-shadow:0_0_10px_rgba(0,243,255,0.6)]">#—</p>
               <p className="font-mono text-xs text-casino-muted mt-1">Spin to claim your spot</p>
             </div>
           </div>

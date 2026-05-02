@@ -85,8 +85,7 @@ export default function NightUnfoldsSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-screen overflow-hidden bg-casino-ink"
-      style={{ zIndex: 30 }}
+      className=" z-[]"
     >
       {/* Full-bleed background */}
       <img
@@ -112,7 +111,7 @@ export default function NightUnfoldsSection() {
         ref={headlineRef}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center max-w-[70vw]"
       >
-        <h2 className="font-serif text-5xl md:text-7xl lg:text-8xl text-casino-neon uppercase mb-4" style={{ textShadow: '0 0 30px rgba(176,38,255,0.8)' }}>
+        <h2 className="font-serif text-5xl md:text-7xl lg:text-8xl text-casino-neon uppercase mb-4 [text-shadow:0_0_30px_rgba(176,38,255,0.8)]">
           Endless Free Spins
         </h2>
         <p className="font-mono text-sm text-casino-ivory/90 tracking-wide">

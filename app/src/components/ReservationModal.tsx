@@ -95,7 +95,7 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-casino-charcoal border border-casino-neon/30 text-casino-ivory sm:max-w-md shadow-[0_0_50px_rgba(0,243,255,0.15)]">
         <DialogHeader>
-          <DialogTitle className="font-serif text-3xl text-casino-ivory uppercase tracking-tight" style={{ textShadow: '0 0 15px rgba(0,243,255,0.5)' }}>
+          <DialogTitle className="font-serif text-3xl text-casino-ivory uppercase tracking-tight [text-shadow:0_0_15px_rgba(0,243,255,0.5)]">
             Join Cyber Slots
           </DialogTitle>
           <DialogDescription className="text-casino-muted font-mono text-xs">
@@ -105,8 +105,8 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
 
         {submitted ? (
           <div className="flex flex-col items-center justify-center py-10 gap-4">
-            <CheckCircle2 className="w-16 h-16 text-casino-neon animate-pulse" style={{ filter: 'drop-shadow(0 0 10px #00f3ff)' }} />
-            <p className="font-serif text-2xl text-casino-ivory" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>Account Created!</p>
+            <CheckCircle2 className="w-16 h-16 text-casino-neon animate-pulse [filter:drop-shadow(0_0_10px_#00f3ff)]" />
+            <p className="font-serif text-2xl text-casino-ivory [text-shadow:0_0_10px_rgba(255,255,255,0.5)]">Account Created!</p>
             <p className="text-casino-gold font-mono text-sm text-center max-w-xs animate-bounce mt-2">
               +1,000 Free Credits Added
             </p>

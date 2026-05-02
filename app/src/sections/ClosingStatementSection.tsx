@@ -96,8 +96,7 @@ export default function ClosingStatementSection({ onReserve }: ClosingStatementS
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-screen overflow-hidden bg-casino-ink"
-      style={{ zIndex: 80 }}
+      className=" z-[]"
     >
       {/* Left image */}
       <img
@@ -114,7 +113,7 @@ export default function ClosingStatementSection({ onReserve }: ClosingStatementS
         ref={textRef}
         className="absolute left-[46vw] top-[22vh] w-[48vw]"
       >
-        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-casino-gold uppercase leading-[1.1] mb-6" style={{ textShadow: '0 0 15px rgba(255, 215, 0, 0.4)' }}>
+        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-casino-gold uppercase leading-[1.1] mb-6 [text-shadow:0_0_15px_rgba(255,_215,_0,_0.4)]">
           Are You Ready<br />
           To Spin?
         </h2>

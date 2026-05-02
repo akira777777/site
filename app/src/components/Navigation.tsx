@@ -108,8 +108,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
             window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
             setMobileOpen(false);
           }}
-          className="font-serif text-casino-ivory text-xl tracking-tight hover:opacity-100 opacity-80 transition-opacity uppercase"
-          style={{ textShadow: '0 0 10px rgba(176,38,255,0.8)' }}
+          className="font-serif text-casino-ivory text-xl tracking-tight hover:opacity-100 opacity-80 transition-opacity uppercase [text-shadow:0_0_10px_rgba(176,38,255,0.8)]"
         >
           Cyber Slots
         </a>

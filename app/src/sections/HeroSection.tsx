@@ -281,8 +281,7 @@ export default function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-screen overflow-hidden bg-casino-ink"
-      style={{ zIndex: 10 }}
+      className=" z-[]"
     >
       <canvas
         ref={canvasRef}
@@ -292,7 +291,7 @@ export default function HeroSection() {
 
       {/* Loading state */}
       {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-casino-ink" style={{ zIndex: 1 }}>
+        <div className=" z-[]">
           <div className="w-8 h-8 border-2 border-casino-ember/30 border-t-casino-ember rounded-full animate-spin" />
         </div>
       )}
@@ -300,13 +299,12 @@ export default function HeroSection() {
       {/* Content overlay */}
       <div
         ref={textRef}
-        className="absolute left-[6vw] top-1/2 -translate-y-1/2 max-w-xl"
-        style={{ zIndex: 2 }}
+        className=" z-[]"
       >
         <p className="hero-animate font-mono text-xs text-casino-muted mb-4 tracking-widest uppercase opacity-0">
           Lobby / Online Slots
         </p>
-        <h1 className="hero-animate font-serif text-5xl md:text-7xl text-casino-gold leading-[1.05] mb-6 uppercase opacity-0" style={{ textShadow: '0 0 20px rgba(255, 215, 0, 0.4)' }}>
+        <h1 className="hero-animate font-serif text-5xl md:text-7xl text-casino-gold leading-[1.05] mb-6 uppercase opacity-0 [text-shadow:0_0_20px_rgba(255,_215,_0,_0.4)]">
           The Ultimate<br />
           Slot<br />
           Experience.
@@ -343,8 +341,7 @@ export default function HeroSection() {
       {/* Ticker line */}
       <div
         ref={tickerRef}
-        className="absolute bottom-[8vh] left-0 w-[200%] font-serif text-5xl md:text-7xl text-casino-ivory/10 whitespace-nowrap pointer-events-none"
-        style={{ zIndex: 0 }}
+        className=" z-[]"
       >
         MEGA WIN — JACKPOT — FREE SPINS — MEGA WIN — JACKPOT — FREE SPINS —
       </div>

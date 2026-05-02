@@ -62,15 +62,14 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
     <footer
       ref={sectionRef}
       id="contact"
-      className="relative w-full bg-casino-charcoal"
-      style={{ zIndex: 100 }}
+      className="relative w-full bg-casino-charcoal z-[100]"
     >
       <div ref={contentRef} className="px-[6vw] py-[8vh]">
         {/* Main content */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
           {/* Left: CTA */}
           <div id="reserve">
-            <h2 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase mb-4" style={{ textShadow: '0 0 20px rgba(176,38,255,0.4)' }}>
+            <h2 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase mb-4 [text-shadow:0_0_20px_rgba(176,38,255,0.4)]">
               Start Spinning Today
             </h2>
             <p className="text-casino-muted text-base max-w-md mb-8 leading-relaxed">
@@ -111,6 +110,7 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
             <div className="flex gap-4 mt-8">
               <a
                 href="#"
+                title="Instagram"
                 aria-label="Instagram"
                 className="w-10 h-10 rounded-full border border-casino-ivory/20 flex items-center justify-center text-casino-muted hover:text-casino-ivory hover:border-casino-ember transition-all"
               >
@@ -118,6 +118,7 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
               </a>
               <a
                 href="#"
+                title="Twitter"
                 aria-label="Twitter"
                 className="w-10 h-10 rounded-full border border-casino-ivory/20 flex items-center justify-center text-casino-muted hover:text-casino-ivory hover:border-casino-ember transition-all"
               >

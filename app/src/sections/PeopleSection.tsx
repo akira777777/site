@@ -85,15 +85,13 @@ export default function PeopleSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full h-screen overflow-hidden bg-casino-ink"
-      style={{ zIndex: 60 }}
+      className=" z-[]"
     >
       {/* Top half: Dark space with headline */}
       <div className="absolute top-0 left-0 w-full h-[50vh] bg-casino-charcoal flex flex-col justify-center items-center">
         <h2
           ref={headlineRef}
-          className="font-serif text-5xl md:text-7xl lg:text-8xl text-casino-neon uppercase text-center max-w-[80vw]"
-          style={{ textShadow: '0 0 20px rgba(176,38,255,0.6)' }}
+          className="font-serif text-5xl md:text-7xl lg:text-8xl text-casino-neon uppercase text-center max-w-[80vw] [text-shadow:0_0_20px_rgba(176,38,255,0.6)]"
         >
           The Bonus Round
         </h2>

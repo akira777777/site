@@ -43,7 +43,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
         fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <h1 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase tracking-tight mb-8" style={{ textShadow: '0 0 15px rgba(0,243,255,0.8)' }}>
+      <h1 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase tracking-tight mb-8 [text-shadow:0_0_15px_rgba(0,243,255,0.8)]">
         Cyber Slots
       </h1>
       <div className="w-48 h-px bg-casino-ivory/10 relative overflow-hidden">
