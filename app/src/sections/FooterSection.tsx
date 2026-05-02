@@ -1,158 +1,66 @@
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Mail, Phone, MapPin, Instagram, Twitter } from 'lucide-react';
+import { Mail, MessageCircle, ShieldCheck } from 'lucide-react';
 
 interface FooterSectionProps {
   onReserve?: () => void;
 }
 
 export default function FooterSection({ onReserve }: FooterSectionProps) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const footerLineRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    const content = contentRef.current;
-    const footerLine = footerLineRef.current;
-    if (!section || !content || !footerLine) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    gsap.fromTo(
-      content,
-      { y: 30, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: prefersReducedMotion ? 0 : 0.8,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    );
-
-    gsap.fromTo(
-      footerLine,
-      { scaleX: 0 },
-      {
-        scaleX: 1,
-        duration: prefersReducedMotion ? 0 : 1,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: footerLine,
-          start: 'top 90%',
-          toggleActions: 'play none none reverse',
-        },
-      }
-    );
-
-    return () => {
-      ScrollTrigger.getAll().forEach((st) => {
-        if (st.vars.trigger === section || st.vars.trigger === footerLine) st.kill();
-      });
-    };
-  }, []);
-
   return (
-    <footer
-      ref={sectionRef}
-      id="contact"
-      className="relative w-full bg-casino-charcoal z-[100]"
-    >
-      <div ref={contentRef} className="px-[6vw] py-[8vh]">
-        {/* Main content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-          {/* Left: CTA */}
-          <div id="reserve">
-            <h2 className="font-serif text-4xl md:text-5xl text-casino-ivory uppercase mb-4 [text-shadow:0_0_20px_rgba(176,38,255,0.4)]">
-              Start Spinning Today
+    <footer id="contact" className="relative z-[100] bg-casino-charcoal">
+      <div className="mx-auto max-w-7xl px-[6vw] py-14">
+        <div className="grid grid-cols-1 gap-10 border-b border-casino-ivory/10 pb-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Cyber Slots</p>
+            <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-5xl">
+              Keep The Lobby Open
             </h2>
-            <p className="text-casino-muted text-base max-w-md mb-8 leading-relaxed">
-              Join the ultimate high-stakes online experience. Claim your welcome bonus and hit the jackpot.
+            <p className="mt-4 max-w-xl text-base leading-7 text-casino-muted">
+              A focused slot landing page with clear bonus entry, playable demo, and live ranking hooks.
             </p>
             <button
               onClick={onReserve}
-              className="inline-block px-8 py-4 bg-casino-neon/20 border border-casino-neon text-casino-neon rounded-full font-mono text-sm hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_20px_rgba(0,243,255,0.5)] transition-all cursor-pointer tracking-widest uppercase"
+              className="mt-7 inline-flex items-center gap-2 bg-casino-cyber px-5 py-3 font-mono text-sm uppercase tracking-widest text-casino-ink transition hover:bg-casino-gold"
             >
-              Claim Bonus
+              <ShieldCheck className="h-4 w-4" />
+              Claim Starter Credits
             </button>
           </div>
 
-          {/* Right: Contact */}
-          <div className="md:pl-12">
-            <div className="space-y-4">
-              <a
-                href="mailto:support@cyberslots.club"
-                className="flex items-center gap-3 text-casino-muted hover:text-casino-ivory transition-colors"
-              >
-                <Mail className="w-4 h-4 text-casino-neon" />
-                <span className="font-mono text-sm">support@cyberslots.club</span>
-              </a>
-              <a
-                href="tel:+12135550199"
-                className="flex items-center gap-3 text-casino-muted hover:text-casino-ivory transition-colors"
-              >
-                <Phone className="w-4 h-4 text-casino-ember" />
-                <span className="font-mono text-sm">+1 (213) 555-0199</span>
-              </a>
-              <div className="flex items-center gap-3 text-casino-muted">
-                <MapPin className="w-4 h-4 text-casino-neon" />
-                <span className="font-mono text-sm">Global Online Platform</span>
-              </div>
-            </div>
-
-            {/* Social */}
-            <div className="flex gap-4 mt-8">
-              <a
-                href="#"
-                title="Instagram"
-                aria-label="Instagram"
-                className="w-10 h-10 rounded-full border border-casino-ivory/20 flex items-center justify-center text-casino-muted hover:text-casino-ivory hover:border-casino-ember transition-all"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
-                title="Twitter"
-                aria-label="Twitter"
-                className="w-10 h-10 rounded-full border border-casino-ivory/20 flex items-center justify-center text-casino-muted hover:text-casino-ivory hover:border-casino-ember transition-all"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
-            </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <a
+              href="mailto:support@cyberslots.club"
+              className="border border-casino-ivory/10 bg-casino-ink/55 p-5 text-casino-muted transition hover:border-casino-cyber/40 hover:text-casino-ivory"
+            >
+              <Mail className="h-5 w-5 text-casino-cyber" />
+              <p className="mt-4 font-mono text-xs uppercase tracking-widest">Support</p>
+              <p className="mt-2 break-all text-sm">support@cyberslots.club</p>
+            </a>
+            <a
+              href="#top"
+              className="border border-casino-ivory/10 bg-casino-ink/55 p-5 text-casino-muted transition hover:border-casino-gold/40 hover:text-casino-ivory"
+            >
+              <MessageCircle className="h-5 w-5 text-casino-gold" />
+              <p className="mt-4 font-mono text-xs uppercase tracking-widest">Lobby</p>
+              <p className="mt-2 text-sm">Return to the first screen</p>
+            </a>
           </div>
         </div>
 
-        {/* Footer line */}
-        <div
-          ref={footerLineRef}
-          className="h-px bg-casino-ivory/10 mb-8 origin-left"
-        />
-
-        {/* Bottom row */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="font-mono text-xs text-casino-muted/60">
-            © 2025 Cyber Slots. All rights reserved. 18+ Only.
-          </p>
-          <div className="flex gap-6">
-            <a href="#" className="font-mono text-xs text-casino-muted/60 hover:text-casino-ivory transition-colors">
+        <div className="flex flex-col justify-between gap-4 pt-7 text-casino-muted/70 md:flex-row md:items-center">
+          <p className="font-mono text-xs">© 2026 Cyber Slots. Demo entertainment experience. 18+ only.</p>
+          <div className="flex gap-5">
+            <a href="#" className="font-mono text-xs uppercase tracking-widest transition hover:text-casino-ivory">
               Privacy
             </a>
-            <a href="#" className="font-mono text-xs text-casino-muted/60 hover:text-casino-ivory transition-colors">
+            <a href="#" className="font-mono text-xs uppercase tracking-widest transition hover:text-casino-ivory">
               Terms
             </a>
-            <a href="#" className="font-mono text-xs text-casino-muted/60 hover:text-casino-ivory transition-colors">
-              Accessibility
+            <a href="#" className="font-mono text-xs uppercase tracking-widest transition hover:text-casino-ivory">
+              Responsible Play
             </a>
           </div>
         </div>
       </div>
-
     </footer>
   );
 }
