@@ -96,7 +96,7 @@ export default function ClosingStatementSection({ onReserve }: ClosingStatementS
   return (
     <section
       ref={sectionRef}
-      className=" z-[]"
+      className="relative w-full h-screen overflow-hidden bg-casino-ink z-[80]"
     >
       {/* Left image */}
       <img

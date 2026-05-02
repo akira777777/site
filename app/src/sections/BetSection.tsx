@@ -97,7 +97,7 @@ export default function BetSection() {
     <section
       ref={sectionRef}
       id="bet"
-      className=" z-[]"
+      className="relative w-full h-screen overflow-hidden bg-casino-ink z-[20]"
     >
       {/* Top image */}
       <img

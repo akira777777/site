@@ -269,7 +269,7 @@ export default function PlayableSlotSection() {
 
   return (
     <section ref={sectionRef} id="play"
-      className=" z-[]">
+      className="relative w-full min-h-screen bg-casino-ink py-[10vh] flex flex-col items-center justify-center overflow-hidden z-[90]">
 
       <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_50%_50%,_rgba(176,38,255,0.06)_0%,_transparent_60%)]" />
 

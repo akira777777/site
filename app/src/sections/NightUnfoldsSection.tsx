@@ -85,7 +85,7 @@ export default function NightUnfoldsSection() {
   return (
     <section
       ref={sectionRef}
-      className=" z-[]"
+      className="relative w-full h-screen overflow-hidden bg-casino-ink z-[30]"
     >
       {/* Full-bleed background */}
       <img

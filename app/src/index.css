@@ -48,7 +48,7 @@
 
 @layer utilities {
   .text-balance {
-    text-wrap: balance;
+    /* text-wrap: balance; - removed due to Chrome < 114 warning, use Tailwind default if needed */
   }
 
   .animate-marquee {

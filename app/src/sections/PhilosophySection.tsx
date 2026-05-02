@@ -86,7 +86,7 @@ export default function PhilosophySection() {
     <section
       ref={sectionRef}
       id="philosophy"
-      className=" z-[]"
+      className="relative w-full h-screen overflow-hidden bg-casino-ink z-[70]"
     >
       {/* Full-bleed background */}
       <img

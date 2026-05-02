@@ -77,7 +77,7 @@ export default function LeaderboardSection() {
 
   return (
     <section ref={sectionRef} id="jackpots"
-      className=" z-[]">
+      className="relative w-full bg-casino-charcoal py-[10vh] overflow-hidden z-[91]">
 
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none [background:radial-gradient(ellipse_at_50%_0%,_rgba(176,38,255,0.08)_0%,_transparent_60%)]" />

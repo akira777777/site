@@ -112,7 +112,7 @@ export default function CollageSection() {
     <section
       ref={sectionRef}
       id="experience"
-      className=" z-[]"
+      className="relative w-full h-screen overflow-hidden bg-casino-ink z-[40]"
     >
       {/* Left top image - roulette */}
       <img

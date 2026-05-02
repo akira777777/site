@@ -94,7 +94,7 @@ export default function LifestyleSection() {
   return (
     <section
       ref={sectionRef}
-      className=" z-[]"
+      className="relative w-full h-screen overflow-hidden bg-casino-ink z-[50]"
     >
       {/* Left image */}
       <img

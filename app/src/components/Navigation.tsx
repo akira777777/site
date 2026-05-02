@@ -87,13 +87,10 @@ export default function Navigation({ onReserve }: NavigationProps) {
         scrolled ? 'bg-casino-ink/65 backdrop-blur-md' : 'bg-transparent'
       }`}
     >
-      {/* Scroll progress bar */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-transparent">
         <div
           className="h-full bg-casino-neon transition-[width] duration-100 ease-out [box-shadow:0_0_8px_rgba(176,38,255,0.8)]"
-          style={{
-            width: `${progress * 100}%`
-          }}
+          style={{ width: `${progress * 100}%` } as React.CSSProperties}
         />
       </div>
 
@@ -126,7 +123,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
               >
                 {item.label}
                 {isActive && (
-                  <span className="absolute -bottom-1 left-0 w-full h-px bg-casino-neon" style={{ boxShadow: '0 0 6px rgba(176,38,255,0.8)' }} />
+                  <span className="absolute -bottom-1 left-0 w-full h-px bg-casino-neon [box-shadow:0_0_6px_rgba(176,38,255,0.8)]" />
                 )}
               </a>
             );
@@ -144,7 +141,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
           className="md:hidden text-casino-ivory p-1 cursor-pointer"
           onClick={() => setMobileOpen((p) => !p)}
           aria-label="Toggle menu"
-          aria-expanded={mobileOpen}
+          aria-expanded={mobileOpen ? 'true' : 'false'}
         >
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -155,7 +152,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
         className={`md:hidden absolute top-full left-0 w-full bg-casino-ink/95 backdrop-blur-lg border-b border-casino-ivory/10 transition-all duration-300 overflow-hidden ${
           mobileOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}
-        aria-hidden={!mobileOpen}
+        aria-hidden={!mobileOpen ? 'true' : 'false'}
       >
         <div className="flex flex-col items-center gap-6 py-8">
           {navItems.map((item) => {

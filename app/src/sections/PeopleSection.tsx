@@ -85,7 +85,7 @@ export default function PeopleSection() {
   return (
     <section
       ref={sectionRef}
-      className=" z-[]"
+      className="relative w-full h-screen overflow-hidden bg-casino-ink z-[60]"
     >
       {/* Top half: Dark space with headline */}
       <div className="absolute top-0 left-0 w-full h-[50vh] bg-casino-charcoal flex flex-col justify-center items-center">
