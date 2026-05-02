@@ -1,4 +1,5 @@
 import React from 'react';
+import { SuperpowerProvider } from './context/SuperpowerContext';
 
 // Lazy load the entry component
 const SuperpowerList = React.lazy(() => import('./components/SuperpowerList'));
@@ -8,8 +9,15 @@ const SuperpowerList = React.lazy(() => import('./components/SuperpowerList'));
  * 
  * Publicly exported component that handles lazy loading and feature-level orchestration.
  */
-export const SuperpowersFeature = SuperpowerList;
+export const SuperpowersFeature: React.FC = () => {
+  return (
+    <SuperpowerProvider>
+      <SuperpowerList />
+    </SuperpowerProvider>
+  );
+};
 
 export * from './types';
 export * from './api/superpowersApi';
 export * from './hooks/useSuperpowers';
+export * from './context/SuperpowerContext';
