@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { useSuperpowers } from '../hooks/useSuperpowers';
 import { SuperpowerCard } from './SuperpowerCard';
 import { useSuperpowerContext } from '../context/SuperpowerContext';
+import type { Superpower } from '../types';
 
 /**
  * SuperpowerList
@@ -21,7 +22,9 @@ export const SuperpowerList: React.FC = () => {
   useGSAP(() => {
     if (!containerRef.current) return;
     
-    gsap.fromTo('.superpower-card-wrapper', 
+    const cards = containerRef.current.querySelectorAll('.superpower-card-wrapper');
+    
+    gsap.fromTo(cards,
       { y: 50, opacity: 0 },
       { 
         y: 0, 
@@ -32,21 +35,30 @@ export const SuperpowerList: React.FC = () => {
         scrollTrigger: {
           trigger: containerRef.current,
           start: 'top 80%',
+          toggleActions: 'play none none reverse'
         }
       }
     );
+
+    return () => {
+      // Cleanup ScrollTrigger instances
+      const triggers = (gsap as any).ScrollTrigger.getAll();
+      triggers.forEach((trigger: any) => trigger.kill());
+    };
   }, { scope: containerRef });
 
   return (
     <Box ref={containerRef} sx={{ mt: 8 }}>
       <Grid container spacing={4}>
-        {powers.map((power) => (
-          <Grid className="superpower-card-wrapper" size={{ xs: 12, md: 6 }} key={power.id}>
-            <SuperpowerCard
-              power={power}
-              isActive={equippedPowerId === power.id}
-              onSelect={equipPower}
-            />
+        {(powers as Superpower[]).map((power) => (
+          <Grid key={power.id} size={{ xs: 12, md: 6 }}>
+            <div className="superpower-card-wrapper">
+              <SuperpowerCard
+                power={power}
+                isActive={equippedPowerId === power.id}
+                onSelect={(id) => equipPower(id, power.price)}
+              />
+            </div>
           </Grid>
         ))}
       </Grid>

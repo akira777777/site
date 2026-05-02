@@ -14,6 +14,11 @@ export const superpowersApi = {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
+    // Simulate 5% error rate for testing error boundaries
+    if (Math.random() < 0.05) {
+      throw new Error('Failed to fetch superpowers: Network error');
+    }
+
     return [
       {
         id: 'neon-multiplier',

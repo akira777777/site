@@ -1,8 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { SuperpowerProvider } from './context/SuperpowerContext';
-
-// Lazy load the entry component
-const SuperpowerList = React.lazy(() => import('./components/SuperpowerList'));
+import { SuperpowerList } from './components/SuperpowerList';
 
 /**
  * Superpowers Feature Entry
@@ -12,7 +10,9 @@ const SuperpowerList = React.lazy(() => import('./components/SuperpowerList'));
 export const SuperpowersFeature: React.FC = () => {
   return (
     <SuperpowerProvider>
-      <SuperpowerList />
+      <Suspense fallback={<div>Loading superpowers...</div>}>
+        <SuperpowerList />
+      </Suspense>
     </SuperpowerProvider>
   );
 };

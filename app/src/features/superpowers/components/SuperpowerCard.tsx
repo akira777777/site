@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Box, Typography, Button, Paper } from '@mui/material';
 import type { Superpower } from '../types';
 
 interface SuperpowerCardProps {
   power: Superpower;
   isActive: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (id: string, price: number) => void;
 }
 
 /**
@@ -16,11 +16,14 @@ interface SuperpowerCardProps {
  */
 export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive, onSelect }) => {
   
-
-
   const handleSelect = useCallback(() => {
-    onSelect(power.id);
-  }, [power.id, onSelect]);
+    onSelect(power.id, power.price);
+  }, [power.id, power.price, onSelect]);
+
+  const buttonText = useMemo(() => 
+    isActive ? 'System Equipped' : 'Initialize Protocol', 
+    [isActive]
+  );
 
   return (
     <Paper
@@ -42,14 +45,14 @@ export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive,
         borderStyle: 'solid',
         transform: isActive ? 'translateY(-8px) scale(1.02)' : 'translateY(0)',
         boxShadow: isActive 
-          ? `0 0 40px rgba(176,38,255,0.2), inset 0 0 20px rgba(176,38,255,0.1)` 
+          ? '0 0 40px rgba(176,38,255,0.2), inset 0 0 20px rgba(176,38,255,0.1)'
           : '0 8px 32px rgba(0, 0, 0, 0.4)',
         '&:hover': {
           borderColor: isActive ? 'primary.main' : 'rgba(176,38,255,0.6)',
           transform: isActive ? 'translateY(-8px) scale(1.02)' : 'translateY(-4px)',
           boxShadow: isActive 
-            ? `0 0 50px rgba(176,38,255,0.3)` 
-            : `0 12px 40px rgba(176,38,255,0.15), inset 0 0 10px rgba(176,38,255,0.05)`,
+            ? '0 0 50px rgba(176,38,255,0.3)'
+            : '0 12px 40px rgba(176,38,255,0.15), inset 0 0 10px rgba(176,38,255,0.05)',
         },
         '&::before': {
           content: '""',
@@ -107,7 +110,7 @@ export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive,
               borderColor: isActive ? 'primary.main' : 'rgba(255,255,255,0.1)',
               boxShadow: isActive ? '0 0 20px rgba(176,38,255,0.3)' : 'none',
               transition: 'all 0.3s ease',
-              '.group-hover &': {
+              '.group:hover &': {
                 borderColor: 'primary.main',
                 transform: 'scale(1.1) rotate(5deg)'
               }
@@ -118,7 +121,7 @@ export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive,
           <Box 
             sx={{ 
               fontFamily: '"Space Mono", monospace',
-              color: '#00FFCC', // Cyber-teal
+              color: '#00FFCC',
               fontWeight: 700,
               fontSize: '1rem',
               px: 2,
@@ -169,6 +172,7 @@ export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive,
           fullWidth
           variant={isActive ? "contained" : "outlined"}
           color="primary"
+          onClick={handleSelect}
           sx={{
             py: 1.5,
             fontWeight: 800,
@@ -199,7 +203,7 @@ export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive,
             } : {}
           }}
         >
-          {isActive ? 'System Equipped' : 'Initialize Protocol'}
+          {buttonText}
         </Button>
       </Box>
     </Paper>
