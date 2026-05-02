@@ -1,12 +1,45 @@
-// Web Audio utility - generates sounds using oscillators (no files needed)
 export const AudioEngine = (() => {
   let ctx: AudioContext | null = null;
   let muted = false;
+  let ambientGain: GainNode | null = null;
+  let hasStartedAmbient = false;
 
   const getCtx = () => {
     if (!ctx) ctx = new AudioContext();
     if (ctx.state === 'suspended') ctx.resume();
     return ctx;
+  };
+
+  const startAmbient = () => {
+    if (hasStartedAmbient || muted) return;
+    try {
+      const ac = getCtx();
+      ambientGain = ac.createGain();
+      ambientGain.connect(ac.destination);
+      ambientGain.gain.value = 0.05; // very low volume
+
+      // Create a chord for the drone
+      const freqs = [65.41, 98.00, 130.81]; // C2, G2, C3
+      freqs.forEach(freq => {
+        const osc = ac.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        // Slow LFO for volume modulation
+        const lfo = ac.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.1 + (Math.random() * 0.05); // very slow
+        const lfoGain = ac.createGain();
+        lfoGain.gain.value = 0.5;
+        lfo.connect(lfoGain.gain);
+        
+        osc.connect(lfoGain);
+        lfoGain.connect(ambientGain!);
+        
+        osc.start();
+        lfo.start();
+      });
+      hasStartedAmbient = true;
+    } catch (_) { }
   };
 
   const playTone = (freq: number, type: OscillatorType, duration: number, volume = 0.3, detune = 0) => {
@@ -28,9 +61,15 @@ export const AudioEngine = (() => {
   };
 
   return {
-    setMuted: (m: boolean) => { muted = m; },
+    setMuted: (m: boolean) => { 
+      muted = m; 
+      if (ambientGain) {
+        ambientGain.gain.setTargetAtTime(m ? 0 : 0.05, getCtx().currentTime, 0.5);
+      }
+    },
 
     spinStart: () => {
+      startAmbient();
       // Whirring reel sound - rapid descending tones
       [0, 60, 120].forEach(delay => {
         setTimeout(() => playTone(200 + Math.random() * 100, 'sawtooth', 0.08, 0.08), delay);
