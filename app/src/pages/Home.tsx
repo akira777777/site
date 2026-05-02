@@ -1,15 +1,19 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowRight,
-  BadgeCheck,
   CircleDollarSign,
-  Clock3,
   Crown,
   Dice5,
+  Gamepad2,
   Gift,
-  LockKeyhole,
+  Play,
+  Radio,
+  ShieldCheck,
   Sparkles,
+  Star,
   Trophy,
+  Users,
+  Video,
   Zap,
 } from 'lucide-react';
 import Navigation from '../components/Navigation';
@@ -31,12 +35,27 @@ const scrollBehavior = () =>
 
 const featuredGames = [
   {
+    id: 'egypt',
+    title: 'Egypt Fire Demo',
+    imageBase: 'slot_bonus',
+    fallback: '/images/slot_bonus.png',
+    tag: 'Hold & Win',
+    category: 'Egypt',
+    rating: '4.9',
+    copy: 'Fireball cash symbols, scarab power, respins, and a Royal demo jackpot chase.',
+    layout: '5x4 / 20 lines',
+    volatility: 'High',
+    bonus: '6+ Fireballs trigger Hold & Win, new cash resets respins to 3, and Scarab Power can multiply collected values.',
+  },
+  {
     id: 'neon',
     title: 'Neon Reels',
     imageBase: 'slot_neon',
     fallback: '/images/slot_neon.png',
-    tag: '5 Lines',
-    copy: 'Classic 3x3 energy with Crown tickets, streak meter, and Star wild upgrades.',
+    tag: 'Hot',
+    category: 'Slots',
+    rating: '4.9',
+    copy: 'Crown tickets, streak wilds, and fast three-reel rhythm.',
     layout: '3x3 reels',
     volatility: 'Fast',
     bonus: '3 Crowns award free-spin tickets; streak wins activate 2x wild mode.',
@@ -46,8 +65,10 @@ const featuredGames = [
     title: 'Cascade Nexus',
     imageBase: 'slot_symbols',
     fallback: '/images/slot_symbols.png',
-    tag: 'Clusters',
-    copy: 'A 5x5 arcade grid where symbol clusters pop into rising cascade multipliers.',
+    tag: 'New',
+    category: 'Cluster',
+    rating: '4.8',
+    copy: 'A 5x5 grid where clusters pop into rising cascade multipliers.',
     layout: '5x5 cluster board',
     volatility: 'Swingy',
     bonus: '5+ connected symbols pay, cascades climb, and 3 Crowns unlock free drops.',
@@ -57,25 +78,93 @@ const featuredGames = [
     title: 'Vault Lock',
     imageBase: 'slot_jackpot',
     fallback: '/images/slot_jackpot.png',
-    tag: 'Hold & Spin',
-    copy: 'Cash symbols lock into a vault board, respins reset, and full boards chase a mega jackpot.',
+    tag: 'Jackpot',
+    category: 'Hold',
+    rating: '4.9',
+    copy: 'Cash symbols stick, respins reset, and full boards chase a mega payout.',
     layout: '3x5 hold board',
     volatility: 'Bonus heavy',
     bonus: 'Cash and locks stick; 6 locked cells start respins; 15 cells trigger mega payout.',
   },
 ];
 
-const perks = [
-  { icon: Gift, title: 'Welcome Boost', value: '1,000 credits', copy: 'Start with a clean balance and bonus picks.' },
-  { icon: Zap, title: 'Instant Play', value: 'No download', copy: 'Open the lobby and spin from any modern browser.' },
-  { icon: LockKeyhole, title: 'Secure Wallet', value: 'Protected', copy: 'Session storage, clear controls, and visible balances.' },
+const arcadeCards = [
+  ...featuredGames,
+  {
+    id: 'coins',
+    title: 'Gold Rush 99',
+    imageBase: 'slot_coins',
+    fallback: '/images/slot_coins.png',
+    tag: 'Daily',
+    category: 'Coins',
+    rating: '4.7',
+    copy: 'A coin-heavy bonus chase built for quick demo rounds.',
+  },
+  {
+    id: 'spins',
+    title: 'Free Spin Lab',
+    imageBase: 'slot_spins',
+    fallback: '/images/slot_spins.png',
+    tag: 'Promo',
+    category: 'Bonus',
+    rating: '4.8',
+    copy: 'Ticket rewards and multiplier passes feed the playable cabinet.',
+  },
+  {
+    id: 'win',
+    title: 'Treasure Cave',
+    imageBase: 'slot_win',
+    fallback: '/images/slot_win.png',
+    tag: 'VIP',
+    category: 'Adventure',
+    rating: '4.6',
+    copy: 'A darker jackpot route with big-win presentation and trophy energy.',
+  },
 ];
 
-const steps = [
-  'Create a player name',
-  'Choose a bonus',
-  'Spin the demo cabinet',
-  'Climb the leaderboard',
+const liveFeatures = [
+  { icon: Video, title: 'HD Streaming', copy: 'Crystal-clear cabinet action' },
+  { icon: Users, title: 'Live Crowd', copy: 'Rotating wins and rankings' },
+  { icon: Zap, title: 'Real-Time', copy: 'Immediate spin feedback' },
+  { icon: ShieldCheck, title: 'Fair Demo', copy: 'Visible credits and reset' },
+];
+
+const promotions = [
+  {
+    icon: Gift,
+    title: 'Welcome Package',
+    value: '1,000 credits',
+    copy: 'Claim a starter wallet and enter the arcade with a clean balance.',
+    accent: 'text-casino-gold',
+  },
+  {
+    icon: Dice5,
+    title: 'Free Tickets',
+    value: '10 spins',
+    copy: 'Choose arcade tickets at signup or earn them from Crown scatters.',
+    accent: 'text-casino-ember',
+  },
+  {
+    icon: CircleDollarSign,
+    title: 'Multiplier Pass',
+    value: '2x boosts',
+    copy: 'Multiplier passes double upcoming demo wins inside the cabinet.',
+    accent: 'text-casino-cyber',
+  },
+  {
+    icon: Trophy,
+    title: 'Mystery Meter',
+    value: '0-100%',
+    copy: 'Losing spins build toward tickets, credit bursts, or boosts.',
+    accent: 'text-casino-neon',
+  },
+];
+
+const vipTiers = [
+  { tier: 'Bronze', points: '0 - 999 pts', color: 'text-amber-600', perks: ['Welcome bonus', 'Weekly cashback 5%', 'Standard support'] },
+  { tier: 'Silver', points: '1,000 - 4,999 pts', color: 'text-slate-300', perks: ['All Bronze perks', 'Weekly cashback 8%', 'Priority payouts'] },
+  { tier: 'Gold', points: '5,000 - 24,999 pts', color: 'text-casino-gold', perks: ['All Silver perks', 'Personal manager', 'Custom missions'] },
+  { tier: 'Diamond', points: '25,000+ pts', color: 'text-casino-cyber', perks: ['All Gold perks', 'VIP events', 'Bespoke bonuses'] },
 ];
 
 interface ResponsiveImageProps {
@@ -138,7 +227,7 @@ function SectionPlaceholder({
       aria-label={label}
     >
       <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_50%_50%,_rgba(176,38,255,0.06)_0%,_transparent_60%)]" />
-      <div className="relative z-10 h-8 w-8 animate-spin rounded-full border-2 border-casino-cyber/25 border-t-casino-cyber" />
+      <div className="relative z-10 h-8 w-8 animate-spin rounded-full border-2 border-casino-gold/25 border-t-casino-gold" />
     </section>
   );
 }
@@ -223,61 +312,59 @@ export default function Home() {
       <ReservationModal open={reserveOpen} onOpenChange={setReserveOpen} />
 
       <main>
-        <section id="top" className="relative min-h-[92vh] overflow-hidden">
+        <section id="top" className="relative min-h-screen overflow-hidden">
           <ResponsiveImage
             imageBase="slot_hero"
             fallback="/images/slot_hero.png"
-            alt="Cyber Slots jackpot cabinet"
+            alt="Neon casino arcade lobby"
             sizes="100vw"
             pictureClassName="absolute inset-0 block h-full w-full"
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="absolute inset-0 h-full w-full object-cover object-center opacity-80"
             loading="eager"
             fetchPriority="high"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,6,18,0.96)_0%,rgba(8,6,18,0.78)_44%,rgba(8,6,18,0.22)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(0deg,#080612_0%,rgba(8,6,18,0)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,6,18,0.94)_0%,rgba(8,6,18,0.64)_40%,rgba(8,6,18,0.14)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_45%,rgba(255,215,0,0.13),transparent_28%),radial-gradient(circle_at_35%_70%,rgba(255,0,127,0.12),transparent_32%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(0deg,#080612_0%,rgba(8,6,18,0)_100%)]" />
 
-          <div className="relative z-10 flex min-h-[92vh] max-w-7xl flex-col justify-end px-[6vw] pb-10 pt-32 md:pb-14">
+          <div className="relative z-20 flex min-h-screen max-w-7xl flex-col justify-end px-[6vw] pb-24 pt-28 md:pb-28">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center gap-2 border border-casino-cyber/30 bg-casino-cyber/10 px-3 py-2 text-xs uppercase tracking-widest text-casino-cyber">
-                <Sparkles className="h-4 w-4" />
-                Live demo lobby
-              </div>
-              <h1 className="max-w-4xl font-serif text-[clamp(3.7rem,9vw,8.8rem)] uppercase leading-[0.9] text-casino-ivory [text-shadow:0_0_34px_rgba(176,38,255,0.4)]">
-                Cyber Slots
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-casino-muted md:text-xl">
-                A sharper casino landing experience with a playable slot, live win energy, and a reward path that feels immediate from the first click.
+              <p className="font-mono text-xs uppercase tracking-[0.32em] text-casino-muted">
+                Lobby / Online Slots
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button
-                  onClick={() => setReserveOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 bg-casino-cyber px-6 py-4 font-mono text-sm uppercase tracking-widest text-casino-ink transition hover:bg-casino-gold focus:outline-none focus:ring-2 focus:ring-casino-cyber"
-                >
-                  Claim Bonus
-                  <ArrowRight className="h-4 w-4" />
-                </button>
+              <h1 className="mt-5 max-w-4xl font-serif text-[clamp(3.1rem,13vw,8.7rem)] uppercase leading-[0.88] text-casino-gold [text-shadow:0_0_30px_rgba(255,215,0,0.28)]">
+                The Ultimate
+                <span className="block">Slot</span>
+                <span className="block">Experience.</span>
+              </h1>
+              <p className="mt-7 max-w-md text-base leading-7 text-casino-muted md:text-lg">
+                Spin the reels, trigger arcade bonuses, and chase live leaderboard energy from a glossy demo lobby.
+              </p>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <button
                   onClick={scrollToPlay}
-                  className="inline-flex items-center justify-center gap-2 border border-casino-ivory/20 bg-casino-ink/45 px-6 py-4 font-mono text-sm uppercase tracking-widest text-casino-ivory backdrop-blur transition hover:border-casino-gold hover:text-casino-gold focus:outline-none focus:ring-2 focus:ring-casino-gold"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-casino-ember px-7 py-3 font-mono text-sm text-casino-ivory transition hover:bg-casino-ember/80 hover:shadow-[0_0_24px_rgba(255,0,127,0.35)] focus:outline-none focus:ring-2 focus:ring-casino-ember"
                 >
-                  Play Demo
-                  <Dice5 className="h-4 w-4" />
+                  Start Spinning
+                  <Play className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => document.getElementById('jackpots')?.scrollIntoView({ behavior: scrollBehavior() })}
+                  className="inline-flex items-center justify-center gap-2 font-mono text-sm text-casino-gold underline underline-offset-4 transition hover:text-casino-ivory focus:outline-none focus:ring-2 focus:ring-casino-gold"
+                >
+                  View Jackpots
+                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
+          </div>
 
-            <div className="mt-12 grid max-w-4xl grid-cols-1 border border-casino-ivory/12 bg-casino-ink/70 backdrop-blur md:grid-cols-3">
-              {[
-                ['Demo balance', '1,000', 'Free credits on signup'],
-                ['Featured games', '3', 'Distinct playable slot modes'],
-                ['Big-win feed', 'Live', 'Rotating leaderboard action'],
-              ].map(([label, value, copy]) => (
-                <div key={label} className="border-b border-casino-ivory/12 p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
-                  <p className="font-mono text-xs uppercase tracking-widest text-casino-muted">{label}</p>
-                  <p className="mt-2 font-serif text-4xl text-casino-gold">{value}</p>
-                  <p className="mt-1 text-sm text-casino-muted">{copy}</p>
-                </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-8 z-10 overflow-hidden">
+            <div className="flex w-max animate-ticker items-center gap-10 whitespace-nowrap font-serif text-[clamp(3.5rem,8vw,7.8rem)] uppercase leading-none text-casino-ivory/12">
+              {[0, 1].map((item) => (
+                <span key={item}>
+                  Mega Win - Jackpot - Free Spins - Mega Win - Jackpot - Free Spins -
+                </span>
               ))}
             </div>
           </div>
@@ -287,151 +374,114 @@ export default function Home() {
           <div className="mx-auto max-w-7xl">
             <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
               <div>
-                <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Featured Lobby</p>
+                <p className="font-mono text-xs uppercase tracking-widest text-casino-ember">Featured Collection</p>
                 <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-6xl">
-                  Games With A Pulse
+                  Trending Games
                 </h2>
               </div>
-              <p className="max-w-md text-base leading-7 text-casino-muted">
-                The page now sells the actual experience first: glossy game art, readable value, and a direct path into the playable cabinet.
-              </p>
+              <button
+                onClick={scrollToPlay}
+                className="inline-flex items-center gap-2 self-start font-mono text-xs uppercase tracking-widest text-casino-muted transition hover:text-casino-gold md:self-auto"
+              >
+                View All Games
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1fr_1fr_1.15fr]">
-              {featuredGames.map((game) => (
-                <button
-                  key={game.title}
-                  onClick={() => selectFeaturedGame(game.id)}
-                  className={`group overflow-hidden border bg-casino-charcoal/70 text-left transition ${
-                    activePreview === game.id
-                      ? 'border-casino-cyber shadow-[0_0_30px_rgba(0,243,255,0.14)]'
-                      : 'border-casino-ivory/12 hover:border-casino-gold/40'
-                  }`}
-                >
-                  <div className="aspect-[4/3] overflow-hidden bg-black">
-                    <ResponsiveImage
-                      imageBase={game.imageBase}
-                      fallback={game.fallback}
-                      alt={`${game.title} slot preview`}
-                      sizes="(min-width: 768px) 31vw, 100vw"
-                      pictureClassName="block h-full w-full"
-                      className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <h3 className="font-serif text-2xl uppercase text-casino-ivory">{game.title}</h3>
-                      <span className="shrink-0 border border-casino-gold/40 px-2 py-1 font-mono text-[11px] uppercase tracking-widest text-casino-gold">
-                        {game.tag}
-                      </span>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {arcadeCards.map((game, index) => {
+                const isPlayable = featuredGames.some((item) => item.id === game.id);
+                const isActive = activePreview === game.id;
+                return (
+                  <article
+                    key={game.title}
+                    className={`group overflow-hidden border bg-casino-charcoal/45 transition ${
+                      isActive
+                        ? 'border-casino-gold shadow-[0_0_34px_rgba(255,215,0,0.16)]'
+                        : 'border-casino-ivory/10 hover:border-casino-gold/40'
+                    }`}
+                  >
+                    <div
+                      role={isPlayable ? 'button' : undefined}
+                      tabIndex={isPlayable ? 0 : undefined}
+                      onClick={() => {
+                        if (isPlayable) selectFeaturedGame(game.id);
+                      }}
+                      onKeyDown={(event) => {
+                        if (!isPlayable || (event.key !== 'Enter' && event.key !== ' ')) return;
+                        event.preventDefault();
+                        selectFeaturedGame(game.id);
+                      }}
+                      className="block w-full text-left"
+                    >
+                      <div className="relative aspect-[5/4] overflow-hidden bg-black">
+                        <ResponsiveImage
+                          imageBase={game.imageBase}
+                          fallback={game.fallback}
+                          alt={`${game.title} game preview`}
+                          sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw"
+                          pictureClassName="block h-full w-full"
+                          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                          loading={index < 2 ? 'eager' : 'lazy'}
+                        />
+                        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(8,6,18,0.92)_0%,rgba(8,6,18,0.1)_62%)]" />
+                        <div className="absolute left-4 top-4 rounded-full bg-casino-ember px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-casino-ivory">
+                          {game.tag}
+                        </div>
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (isPlayable) selectFeaturedGame(game.id);
+                            scrollToPlay();
+                          }}
+                          className="absolute left-4 top-1/2 inline-flex -translate-y-1/2 items-center gap-2 rounded-full bg-casino-gold px-5 py-3 font-mono text-sm text-casino-ink opacity-0 shadow-[0_0_30px_rgba(255,215,0,0.45)] transition group-hover:opacity-100"
+                        >
+                          Play Now
+                          <Play className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-sm leading-6 text-casino-muted">{game.copy}</p>
-                  </div>
-                </button>
-              ))}
-              <aside className="border border-casino-cyber/25 bg-casino-ink/80 p-5">
-                <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Active Preview</p>
-                <h3 className="mt-3 font-serif text-3xl uppercase text-casino-ivory">{selectedGame.title}</h3>
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="border border-casino-ivory/12 bg-black/30 p-3">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Layout</p>
-                    <p className="mt-1 text-sm text-casino-ivory">{selectedGame.layout}</p>
-                  </div>
-                  <div className="border border-casino-ivory/12 bg-black/30 p-3">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Volatility</p>
-                    <p className="mt-1 text-sm text-casino-ivory">{selectedGame.volatility}</p>
-                  </div>
+                    <div className="flex items-end justify-between gap-4 p-5">
+                      <div>
+                        <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{game.category}</p>
+                        <h3 className="mt-2 font-serif text-2xl text-casino-ivory transition group-hover:text-casino-gold">
+                          {game.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-casino-muted">{game.copy}</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="inline-flex items-center gap-1 text-casino-gold">
+                          <Star className="h-4 w-4 fill-current" />
+                          <span className="font-mono text-xs">{game.rating}</span>
+                        </div>
+                        {isPlayable && <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-casino-cyber">Playable</p>}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 border border-casino-gold/25 bg-casino-ink/80 p-5">
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-widest text-casino-gold">Selected Cabinet</p>
+                  <h3 className="mt-2 font-serif text-3xl uppercase text-casino-ivory">{selectedGame.title}</h3>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-casino-muted">{selectedGame.bonus}</p>
                 </div>
-                <p className="mt-5 text-sm leading-6 text-casino-muted">{selectedGame.bonus}</p>
-                <button
-                  onClick={scrollToPlay}
-                  className="mt-6 inline-flex w-full items-center justify-center gap-2 bg-casino-cyber px-5 py-3 font-mono text-xs uppercase tracking-widest text-casino-ink transition hover:bg-casino-gold focus:outline-none focus:ring-2 focus:ring-casino-cyber"
-                >
-                  Play This Slot
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </aside>
-            </div>
-          </div>
-        </section>
-
-        <section id="rewards" className="relative bg-[#0d0918] px-[6vw] py-20">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-widest text-casino-ember">Rewards</p>
-              <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-6xl">
-                Built For The First Spin
-              </h2>
-              <p className="mt-5 max-w-xl text-base leading-7 text-casino-muted">
-                Every CTA points somewhere useful: claim a bonus, test the game, or inspect live rankings. The landing page now behaves like a product, not a poster.
-              </p>
-              <div className="mt-8 grid grid-cols-2 gap-3">
-                {steps.map((step, index) => (
-                  <div key={step} className="border border-casino-ivory/12 bg-casino-ink/60 p-4">
-                    <p className="font-mono text-xs text-casino-gold">0{index + 1}</p>
-                    <p className="mt-2 text-sm font-medium text-casino-ivory">{step}</p>
-                  </div>
-                ))}
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {[
+                    ['Layout', selectedGame.layout],
+                    ['Volatility', selectedGame.volatility],
+                    ['Mode', selectedGame.tag],
+                  ].map(([label, value]) => (
+                    <div key={label} className="min-w-[8rem] border border-casino-ivory/10 bg-black/30 p-3">
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{label}</p>
+                      <p className="mt-1 text-sm text-casino-ivory">{value}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {perks.map(({ icon: Icon, title, value, copy }) => (
-                <article key={title} className="border border-casino-ivory/12 bg-casino-ink p-5">
-                  <Icon className="h-8 w-8 text-casino-cyber" />
-                  <p className="mt-6 font-mono text-xs uppercase tracking-widest text-casino-muted">{title}</p>
-                  <h3 className="mt-2 font-serif text-3xl text-casino-gold">{value}</h3>
-                  <p className="mt-3 text-sm leading-6 text-casino-muted">{copy}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="relative overflow-hidden bg-casino-ink px-[6vw] py-16">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 border border-casino-ivory/12 md:grid-cols-4">
-            {[
-              { icon: BadgeCheck, label: 'Mission Streak', copy: 'Win streaks activate temporary boosts' },
-              { icon: Clock3, label: 'Free Tickets', copy: 'Signup picks and scatters feed demo spins' },
-              { icon: Trophy, label: 'Mystery Meter', copy: 'Losses build toward surprise rewards' },
-              { icon: CircleDollarSign, label: 'Multiplier Pass', copy: 'Selected bonuses double upcoming wins' },
-            ].map(({ icon: Icon, label, copy }) => (
-              <div key={label} className="border-b border-casino-ivory/12 p-5 md:border-b-0 md:border-r md:last:border-r-0">
-                <Icon className="h-6 w-6 text-casino-gold" />
-                <p className="mt-4 font-mono text-xs uppercase tracking-widest text-casino-ivory">{label}</p>
-                <p className="mt-2 text-sm leading-6 text-casino-muted">{copy}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="relative bg-[#0d0918] px-[6vw] py-16">
-          <div className="mx-auto max-w-7xl border border-casino-neon/20 bg-casino-ink/80 p-6 md:p-8">
-            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-              <div>
-                <p className="font-mono text-xs uppercase tracking-widest text-casino-neon">Bonus Lab</p>
-                <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-5xl">
-                  Rewards That Touch The Reels
-                </h2>
-              </div>
-              <p className="max-w-lg text-sm leading-6 text-casino-muted">
-                Bonus choices are no longer cosmetic: credits hit the wallet, spin tickets power free rounds, and multiplier passes change the next playable results.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-              {[
-                { title: 'Active Mission', value: '3-win streak', copy: 'Unlock 2x wild boost in Neon Reels.' },
-                { title: 'Current Boost', value: '2x pass', copy: 'Signup multiplier passes apply inside the cabinet.' },
-                { title: 'Free Tickets', value: '10 spins', copy: 'Pick the arcade spin bonus or earn scatters.' },
-                { title: 'Mystery Meter', value: '0-100%', copy: 'Losing spins fill it toward tickets, boosts, or credits.' },
-              ].map((item) => (
-                <article key={item.title} className="border border-casino-ivory/12 bg-black/25 p-5">
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{item.title}</p>
-                  <h3 className="mt-2 font-serif text-3xl text-casino-gold">{item.value}</h3>
-                  <p className="mt-3 text-sm leading-6 text-casino-muted">{item.copy}</p>
-                </article>
-              ))}
             </div>
           </div>
         </section>
@@ -440,9 +490,96 @@ export default function Home() {
           sectionId="play"
           label="Loading playable slot"
           minHeightClassName="min-h-screen bg-casino-ink"
+          rootMargin="900px 0px"
         >
           <PlayableSlotSection sectionId="play" />
         </LazyLandingSection>
+
+        <section id="live" className="relative overflow-hidden bg-[#0d0918] px-[6vw] py-20">
+          <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_75%_30%,rgba(176,38,255,0.13),transparent_34%)]" />
+          <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Live Experience</p>
+              <h2 className="mt-3 font-serif text-4xl uppercase leading-tight text-casino-ivory md:text-6xl">
+                Real Thrills.
+                <span className="block">Demo Control.</span>
+              </h2>
+              <p className="mt-6 max-w-xl text-base leading-7 text-casino-muted">
+                The lobby keeps the cinematic energy of a live casino while the playable cabinet stays demo-only, fast, and transparent.
+              </p>
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {liveFeatures.map(({ icon: Icon, title, copy }) => (
+                  <div key={title} className="flex gap-4 border border-casino-ivory/10 bg-casino-ink/55 p-4">
+                    <Icon className="mt-1 h-5 w-5 shrink-0 text-casino-gold" />
+                    <div>
+                      <p className="font-mono text-xs uppercase tracking-widest text-casino-ivory">{title}</p>
+                      <p className="mt-1 text-sm text-casino-muted">{copy}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={scrollToPlay}
+                className="mt-8 inline-flex items-center gap-2 rounded-full bg-casino-neon px-7 py-3 font-mono text-sm text-casino-ivory transition hover:bg-casino-neon/80 hover:shadow-[0_0_22px_rgba(176,38,255,0.34)]"
+              >
+                Enter Live Lobby
+                <Radio className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="relative overflow-hidden border border-casino-cyber/20 bg-casino-charcoal/60">
+              <ResponsiveImage
+                imageBase="slot_machine"
+                fallback="/images/slot_machine.png"
+                alt="Live arcade cabinet"
+                sizes="(min-width: 1024px) 48vw, 100vw"
+                pictureClassName="block aspect-[4/3] w-full"
+                className="h-full w-full object-cover opacity-80"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(8,6,18,0.86)_0%,rgba(8,6,18,0.06)_58%)]" />
+              <div className="absolute left-5 top-5 rounded-full bg-casino-ember px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-casino-ivory">
+                Live
+              </div>
+              <div className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-3">
+                {[
+                  ['Players Online', '12,847'],
+                  ['Tables Open', '186'],
+                ].map(([label, value]) => (
+                  <div key={label} className="border border-white/10 bg-black/45 p-4 backdrop-blur">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{label}</p>
+                    <p className="mt-1 font-serif text-3xl text-casino-gold">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="rewards" className="relative bg-casino-ink px-[6vw] py-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <p className="font-mono text-xs uppercase tracking-widest text-casino-ember">Exclusive Offers</p>
+              <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-6xl">
+                Epic Promotions
+              </h2>
+              <p className="mt-4 text-base leading-7 text-casino-muted">
+                Bonus choices are functional: credits hit the wallet, spin tickets power free rounds, and multiplier passes alter wins.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {promotions.map(({ icon: Icon, title, value, copy, accent }) => (
+                <article key={title} className="group border border-casino-ivory/10 bg-casino-charcoal/55 p-6 transition hover:border-casino-gold/40">
+                  <Icon className={`h-7 w-7 ${accent}`} />
+                  <h3 className="mt-7 font-serif text-2xl text-casino-ivory transition group-hover:text-casino-gold">{title}</h3>
+                  <p className={`mt-2 font-mono text-sm ${accent}`}>{value}</p>
+                  <p className="mt-4 text-sm leading-6 text-casino-muted">{copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <LazyLandingSection
           sectionId="jackpots"
           label="Loading leaderboard"
@@ -451,25 +588,61 @@ export default function Home() {
           <LeaderboardSection sectionId="jackpots" />
         </LazyLandingSection>
 
-        <section className="relative bg-[#0d0918] px-[6vw] py-20">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 border border-casino-neon/25 bg-casino-ink/80 p-6 md:grid-cols-[1fr_auto] md:p-8">
+        <section id="vip" className="relative bg-[#0d0918] px-[6vw] py-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <p className="font-mono text-xs uppercase tracking-widest text-casino-gold">Loyalty Program</p>
+              <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-6xl">
+                The VIP Experience
+              </h2>
+              <p className="mt-4 text-base leading-7 text-casino-muted">
+                Every spin and mission pushes the demo profile closer to a more theatrical arcade status.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {vipTiers.map((tier) => (
+                <article key={tier.tier} className="border border-casino-ivory/10 bg-casino-ink/70 p-6">
+                  <div className="mb-6 flex items-center justify-between gap-3">
+                    <h3 className={`font-serif text-3xl ${tier.color}`}>{tier.tier}</h3>
+                    <Crown className={`h-5 w-5 ${tier.color}`} />
+                  </div>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{tier.points}</p>
+                  <div className="mt-6 space-y-3">
+                    {tier.perks.map((perk) => (
+                      <div key={perk} className="flex items-center gap-3 text-sm text-casino-muted">
+                        <Sparkles className="h-4 w-4 text-casino-gold" />
+                        <span>{perk}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-7 border-t border-casino-ivory/10 pt-4 font-mono text-[10px] uppercase tracking-widest text-casino-muted">
+                    Tier Level
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="relative bg-casino-ink px-[6vw] py-20">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 border border-casino-gold/25 bg-casino-charcoal/45 p-6 md:grid-cols-[1fr_auto] md:p-8">
             <div>
               <div className="mb-3 flex items-center gap-3 text-casino-gold">
-                <Crown className="h-6 w-6" />
+                <Gamepad2 className="h-6 w-6" />
                 <span className="font-mono text-xs uppercase tracking-widest">Final call</span>
               </div>
               <h2 className="font-serif text-4xl uppercase text-casino-ivory md:text-6xl">
                 Enter The Lobby
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-casino-muted">
-                Claim the starter bonus, spin the playable cabinet, and use the leaderboard as the next reason to keep exploring.
+                Claim the starter bonus, pick a cabinet, and test the mechanics in the playable demo.
               </p>
             </div>
             <button
               onClick={() => setReserveOpen(true)}
-              className="inline-flex items-center justify-center gap-2 bg-casino-gold px-6 py-4 font-mono text-sm uppercase tracking-widest text-casino-ink transition hover:bg-casino-cyber focus:outline-none focus:ring-2 focus:ring-casino-gold"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-casino-gold px-7 py-3 font-mono text-sm uppercase tracking-widest text-casino-ink transition hover:bg-casino-cyber focus:outline-none focus:ring-2 focus:ring-casino-gold"
             >
-              Create Account
+              Join Now
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>

@@ -26,7 +26,7 @@ import { AudioEngine } from '../utils/audioEngine';
 
 gsap.registerPlugin(ScrollTrigger);
 
-type SlotGameId = 'neon' | 'cascade' | 'vault';
+type SlotGameId = 'neon' | 'cascade' | 'vault' | 'egypt';
 
 interface SlotSymbol {
   id: string;
@@ -35,7 +35,7 @@ interface SlotSymbol {
   weight: number;
   payout: number;
   label: string;
-  role?: 'standard' | 'scatter' | 'wild' | 'cash' | 'lock';
+  role?: 'standard' | 'scatter' | 'wild' | 'cash' | 'lock' | 'power' | 'jackpot';
   cashValue?: number;
 }
 
@@ -101,6 +101,12 @@ const BASE_SYMBOLS = {
   gem: { id: 'gem', icon: Gem, color: '#ffffff', weight: 2, payout: 100, label: 'Gem Jackpot' },
   lock: { id: 'lock', icon: LockKeyhole, color: '#00f3ff', weight: 10, payout: 8, label: 'Vault Lock', role: 'lock' as const },
   cash: { id: 'cash', icon: CircleDollarSign, color: '#22c55e', weight: 14, payout: 1, label: 'Cash Orb', role: 'cash' as const, cashValue: 80 },
+  ankh: { id: 'ankh', icon: Sparkles, color: '#ffd700', weight: 24, payout: 4, label: 'Ankh Relic' },
+  pharaoh: { id: 'pharaoh', icon: Crown, color: '#f59e0b', weight: 10, payout: 12, label: 'Pharaoh Mask' },
+  fireball: { id: 'fireball', icon: Flame, color: '#ff6b00', weight: 13, payout: 1, label: 'Fireball Cash', role: 'cash' as const, cashValue: 100 },
+  scarab: { id: 'scarab', icon: Gem, color: '#00ffcc', weight: 4, payout: 0, label: 'Scarab Power', role: 'power' as const },
+  temple: { id: 'temple', icon: Bell, color: '#f8fafc', weight: 5, payout: 0, label: 'Temple Scatter', role: 'scatter' as const },
+  royal: { id: 'royal', icon: Crown, color: '#ffffff', weight: 1, payout: 1000, label: 'Royal Jackpot', role: 'jackpot' as const },
 };
 
 const SLOT_GAMES: SlotGameConfig[] = [
@@ -149,6 +155,35 @@ const SLOT_GAMES: SlotGameConfig[] = [
     symbols: [BASE_SYMBOLS.coins, BASE_SYMBOLS.flame, BASE_SYMBOLS.bell, BASE_SYMBOLS.cash, BASE_SYMBOLS.lock, BASE_SYMBOLS.gem],
     paytable: ['Cash Orbs lock and add instant credit value', '6+ locked cells starts hold-and-spin respins', 'Filling all 15 cells awards a 250x mega jackpot'],
   },
+  {
+    id: 'egypt',
+    title: 'Egypt Fire Demo',
+    subtitle: '5x4 Hold & Win with scarab power',
+    imageBase: 'slot_bonus',
+    accent: '#ff6b00',
+    layout: '5x4 / 20 lines',
+    rows: 4,
+    cols: 5,
+    betOptions: [20, 50, 100],
+    volatility: 'High',
+    bonusHook: 'Six Fireballs trigger Hold & Win. New cash resets respins to three. Scarabs add a power multiplier.',
+    symbols: [
+      BASE_SYMBOLS.coins,
+      BASE_SYMBOLS.flame,
+      BASE_SYMBOLS.ankh,
+      BASE_SYMBOLS.pharaoh,
+      BASE_SYMBOLS.fireball,
+      BASE_SYMBOLS.scarab,
+      BASE_SYMBOLS.temple,
+      BASE_SYMBOLS.royal,
+    ],
+    paytable: [
+      '5 reels x 4 rows with 20 fixed demo paylines',
+      '6+ Fireballs trigger Hold & Win respins',
+      'Scarab Power can award x2, x3, x5, or x10 on cash values',
+      'Full 20-cell fire board awards the Royal demo jackpot',
+    ],
+  },
 ];
 
 const FAKE_WINNERS = [
@@ -157,6 +192,7 @@ const FAKE_WINNERS = [
   { name: 'SpinMaster', amount: 9900, symbol: 'Vault', game: 'Vault Lock' },
   { name: 'CyberLuck7', amount: 750, symbol: 'Star', game: 'Neon Reels' },
   { name: 'Phantom_X', amount: 3300, symbol: 'Cash', game: 'Vault Lock' },
+  { name: 'NileAce', amount: 12400, symbol: 'Scarab', game: 'Egypt Fire Demo' },
 ];
 
 const DEFAULT_BONUS_STATE: BonusState = {
@@ -192,9 +228,9 @@ const getStoredBonusState = (): BonusState => {
 const getStoredActiveSlot = (): SlotGameId => {
   try {
     const saved = localStorage.getItem('casino_active_slot') as SlotGameId | null;
-    return saved && SLOT_GAMES.some((game) => game.id === saved) ? saved : 'neon';
+    return saved && SLOT_GAMES.some((game) => game.id === saved) ? saved : 'egypt';
   } catch {
-    return 'neon';
+    return 'egypt';
   }
 };
 
@@ -220,6 +256,8 @@ const cellKey = (row: number, col: number) => `${row}-${col}`;
 
 const findSymbol = (game: SlotGameConfig, id: string) =>
   game.symbols.find((symbol) => symbol.id === id) || game.symbols[0];
+
+const isHoldAndWinGame = (gameId: SlotGameId) => gameId === 'vault' || gameId === 'egypt';
 
 const evaluateNeon = (game: SlotGameConfig, grid: string[][], bet: number, bonus: BonusState): SpinResult => {
   let win = 0;
@@ -374,6 +412,93 @@ const evaluateVault = (
   };
 };
 
+const evaluateEgypt = (
+  game: SlotGameConfig,
+  grid: string[][],
+  bet: number,
+  previousLocks: string[],
+  previousRespins: number
+): SpinResult => {
+  const locked = new Set(previousLocks);
+  const matchedCells = new Set<string>();
+  let lineWin = 0;
+  let cashWin = 0;
+  let newLocks = 0;
+  let powerCount = 0;
+
+  grid.forEach((row, rowIndex) => {
+    const first = row[0];
+    let run = 1;
+    for (let col = 1; col < row.length; col += 1) {
+      if (row[col] === first || row[col] === 'scarab') run += 1;
+    }
+    if (run >= 3 && first !== 'fireball' && first !== 'temple') {
+      const symbol = findSymbol(game, first);
+      lineWin += Math.round(symbol.payout * bet * (run / 5));
+      row.forEach((_, colIndex) => matchedCells.add(cellKey(rowIndex, colIndex)));
+    }
+  });
+
+  grid.forEach((row, rowIndex) => {
+    row.forEach((id, colIndex) => {
+      const key = cellKey(rowIndex, colIndex);
+      const symbol = findSymbol(game, id);
+      if (locked.has(key)) {
+        grid[rowIndex][colIndex] = id === 'fireball' || id === 'scarab' || id === 'royal' ? id : 'fireball';
+        return;
+      }
+      if (symbol.role === 'cash' || symbol.role === 'power' || symbol.role === 'jackpot') {
+        locked.add(key);
+        matchedCells.add(key);
+        newLocks += 1;
+        if (symbol.role === 'power') {
+          powerCount += 1;
+        } else if (symbol.role === 'jackpot') {
+          cashWin += bet * 1000;
+        } else {
+          const cashStep = [1, 2, 3, 5, 10][Math.floor(Math.random() * 5)];
+          cashWin += bet * cashStep;
+        }
+      }
+    });
+  });
+
+  const lockedCells = [...locked];
+  const templeCount = grid.flat().filter((id) => id === 'temple').length;
+  const holdTriggered = lockedCells.length >= 6;
+  const boardFilled = lockedCells.length === game.rows * game.cols;
+  const powerMultiplier = powerCount > 0 ? [2, 3, 5, 10][Math.floor(Math.random() * 4)] : 1;
+  const respins = holdTriggered ? (newLocks > 0 ? 3 : Math.max(0, previousRespins - 1)) : 0;
+  const royalWin = boardFilled ? bet * 10000 : 0;
+  const totalCash = Math.round(cashWin * powerMultiplier);
+
+  return {
+    grid,
+    win: lineWin + totalCash + royalWin,
+    matchedCells: [...matchedCells],
+    cascadeCount: 0,
+    scatterCount: templeCount,
+    lockedCells,
+    vaultRespins: respins,
+    vaultFilled: boardFilled,
+    freeSpinAward: templeCount >= 3 ? 5 : 0,
+    bonusTriggered: boardFilled
+      ? 'Royal demo jackpot: full Egypt Fire board'
+      : powerMultiplier > 1
+        ? `Scarab Power x${powerMultiplier} applied`
+        : holdTriggered
+          ? 'Hold & Win active: respins reset to 3'
+          : templeCount >= 3
+            ? 'Temple scatters awarded 5 tickets'
+            : undefined,
+    message: totalCash + royalWin > 0
+      ? `Egypt Fire cash collect: +${totalCash + royalWin}`
+      : lineWin > 0
+        ? `Egypt 20-line hit: +${lineWin}`
+        : 'Egypt Fire needs 6 Fireballs',
+  };
+};
+
 export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlotSectionProps) {
   const [initialGame] = useState<SlotGameConfig>(getStoredActiveGame);
   const sectionRef = useRef<HTMLElement>(null);
@@ -514,7 +639,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
     setShowPaytable(false);
     setMessage(`${nextGame.title.toUpperCase()} READY`);
     setBet((currentBet) => nextGame.betOptions.includes(currentBet) ? currentBet : nextGame.betOptions[0]);
-    if (nextGame.id !== 'vault') setVaultLockedCells([]);
+    if (!isHoldAndWinGame(nextGame.id)) setVaultLockedCells([]);
     try {
       localStorage.setItem('casino_active_slot', nextGame.id);
     } catch {
@@ -637,8 +762,11 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         result = evaluateNeon(game, spinGrid, bet, currentBonus);
       } else if (game.id === 'cascade') {
         result = evaluateCascade(game, spinGrid, bet);
-      } else {
+      } else if (game.id === 'vault') {
         result = evaluateVault(game, spinGrid, bet, vaultLockedCells, currentBonus.vaultRespins);
+        setVaultLockedCells(result.lockedCells || []);
+      } else {
+        result = evaluateEgypt(game, spinGrid, bet, vaultLockedCells, currentBonus.vaultRespins);
         setVaultLockedCells(result.lockedCells || []);
       }
 
@@ -656,7 +784,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         multiplierPasses: Math.max(0, mystery.state.multiplierPasses - (current.multiplierPasses > 0 ? 1 : 0)),
         streak: nextStreak,
         activeBoost: nextStreak >= 3 ? 2 : 1,
-        vaultRespins: game.id === 'vault' ? (result.vaultRespins || 0) : current.vaultRespins,
+        vaultRespins: isHoldAndWinGame(game.id) ? (result.vaultRespins || 0) : current.vaultRespins,
       }));
 
       setGrid(result.grid);
@@ -802,7 +930,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
             { icon: Sparkles, label: 'Mystery Meter', value: `${Math.min(100, bonusState.mystery)}%` },
             { icon: BadgePlus, label: 'Free Tickets', value: bonusState.freeSpinTickets.toString() },
             { icon: Zap, label: 'Multiplier Pass', value: `${bonusState.multiplierPasses} left` },
-            { icon: Shield, label: activeGame.id === 'vault' ? 'Vault Respins' : 'Win Streak', value: activeGame.id === 'vault' ? bonusState.vaultRespins.toString() : `${bonusState.streak}x` },
+            { icon: Shield, label: isHoldAndWinGame(activeGame.id) ? 'Hold Respins' : 'Win Streak', value: isHoldAndWinGame(activeGame.id) ? bonusState.vaultRespins.toString() : `${bonusState.streak}x` },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-center gap-3 border border-white/8 bg-casino-ink/60 p-4">
               <Icon className="h-5 w-5 text-casino-gold" />

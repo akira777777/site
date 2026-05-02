@@ -1,4 +1,4 @@
-import { Mail, MessageCircle, ShieldCheck } from 'lucide-react';
+import { Crown, LockKeyhole, Mail, MessageCircle, ShieldCheck } from 'lucide-react';
 
 interface FooterSectionProps {
   onReserve?: () => void;
@@ -6,59 +6,75 @@ interface FooterSectionProps {
 
 export default function FooterSection({ onReserve }: FooterSectionProps) {
   return (
-    <footer id="contact" className="relative z-[100] bg-casino-charcoal">
-      <div className="mx-auto max-w-7xl px-[6vw] py-14">
-        <div className="grid grid-cols-1 gap-10 border-b border-casino-ivory/10 pb-10 lg:grid-cols-[1.1fr_0.9fr]">
+    <footer id="contact" className="relative z-[100] border-t border-casino-ivory/10 bg-[#0b0714]">
+      <div className="mx-auto max-w-7xl px-[6vw] py-16">
+        <div className="grid grid-cols-1 gap-10 border-b border-casino-ivory/10 pb-12 lg:grid-cols-[1.1fr_0.8fr_0.8fr_0.8fr]">
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Cyber Slots</p>
-            <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory md:text-5xl">
-              Keep The Lobby Open
-            </h2>
-            <p className="mt-4 max-w-xl text-base leading-7 text-casino-muted">
-              A focused slot landing page with clear bonus entry, playable demo, and live ranking hooks.
+            <div className="inline-flex items-center gap-2 font-serif text-2xl text-casino-ivory">
+              <Crown className="h-5 w-5 text-casino-gold" />
+              <span>Cyber<span className="text-casino-gold">Slots</span></span>
+            </div>
+            <p className="mt-5 max-w-sm text-sm leading-7 text-casino-muted">
+              The ultimate high-stakes demo entertainment experience. Play responsibly, win spectacularly.
             </p>
             <button
               onClick={onReserve}
-              className="mt-7 inline-flex items-center gap-2 bg-casino-cyber px-5 py-3 font-mono text-sm uppercase tracking-widest text-casino-ink transition hover:bg-casino-gold"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-casino-ember px-5 py-3 font-mono text-xs uppercase tracking-widest text-casino-ivory transition hover:shadow-[0_0_20px_rgba(255,0,127,0.32)]"
             >
               <ShieldCheck className="h-4 w-4" />
-              Claim Starter Credits
+              Join Now
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <a
-              href="mailto:support@cyberslots.club"
-              className="border border-casino-ivory/10 bg-casino-ink/55 p-5 text-casino-muted transition hover:border-casino-cyber/40 hover:text-casino-ivory"
-            >
-              <Mail className="h-5 w-5 text-casino-cyber" />
-              <p className="mt-4 font-mono text-xs uppercase tracking-widest">Support</p>
-              <p className="mt-2 break-all text-sm">support@cyberslots.club</p>
-            </a>
-            <a
-              href="#top"
-              className="border border-casino-ivory/10 bg-casino-ink/55 p-5 text-casino-muted transition hover:border-casino-gold/40 hover:text-casino-ivory"
-            >
-              <MessageCircle className="h-5 w-5 text-casino-gold" />
-              <p className="mt-4 font-mono text-xs uppercase tracking-widest">Lobby</p>
-              <p className="mt-2 text-sm">Return to the first screen</p>
-            </a>
+          <div>
+            <h3 className="font-mono text-xs uppercase tracking-widest text-casino-ivory">Games</h3>
+            <div className="mt-5 flex flex-col gap-3">
+              {['Slots', 'Live Casino', 'Jackpots', 'New Releases', 'Demo Cabinet'].map((item) => (
+                <a key={item} href={item === 'Demo Cabinet' ? '#play' : '#games'} className="text-sm text-casino-muted transition hover:text-casino-gold">
+                  {item}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-mono text-xs uppercase tracking-widest text-casino-ivory">Support</h3>
+            <div className="mt-5 flex flex-col gap-3">
+              {['Help Center', 'Contact Us', 'Responsible Gaming', 'FAQ', 'Live Chat'].map((item) => (
+                <a key={item} href={item === 'Contact Us' ? 'mailto:support@cyberslots.club' : '#contact'} className="text-sm text-casino-muted transition hover:text-casino-gold">
+                  {item}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-mono text-xs uppercase tracking-widest text-casino-ivory">Legal</h3>
+            <div className="mt-5 flex flex-col gap-3">
+              {['Terms of Service', 'Privacy Policy', 'Cookie Policy', 'Licenses', 'AML Policy'].map((item) => (
+                <a key={item} href="#contact" className="text-sm text-casino-muted transition hover:text-casino-gold">
+                  {item}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col justify-between gap-4 pt-7 text-casino-muted/70 md:flex-row md:items-center">
-          <p className="font-mono text-xs">© 2026 Cyber Slots. Demo entertainment experience. 18+ only.</p>
-          <div className="flex gap-5">
-            <a href="#" className="font-mono text-xs uppercase tracking-widest transition hover:text-casino-ivory">
-              Privacy
-            </a>
-            <a href="#" className="font-mono text-xs uppercase tracking-widest transition hover:text-casino-ivory">
-              Terms
-            </a>
-            <a href="#" className="font-mono text-xs uppercase tracking-widest transition hover:text-casino-ivory">
-              Responsible Play
-            </a>
+        <div className="flex flex-col justify-between gap-6 pt-7 text-casino-muted/70 md:flex-row md:items-center">
+          <div className="flex flex-wrap gap-5">
+            {[
+              { icon: LockKeyhole, text: 'SSL Encrypted' },
+              { icon: ShieldCheck, text: 'Demo Only' },
+              { icon: MessageCircle, text: 'Live Chat' },
+              { icon: Mail, text: '18+ Only' },
+            ].map(({ icon: Icon, text }) => (
+              <span key={text} className="inline-flex items-center gap-2 font-mono text-xs">
+                <Icon className="h-4 w-4" />
+                {text}
+              </span>
+            ))}
           </div>
+          <p className="font-mono text-xs">© 2026 CyberSlots. All rights reserved.</p>
         </div>
       </div>
     </footer>
