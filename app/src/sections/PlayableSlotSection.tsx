@@ -76,6 +76,7 @@ interface SpinResult {
   creditAward?: number;
   lockedCells?: string[];
   vaultRespins?: number;
+  settledGrid?: string[][];
   vaultFilled?: boolean;
 }
 
@@ -197,6 +198,9 @@ const getStoredActiveSlot = (): SlotGameId => {
   }
 };
 
+const getStoredActiveGame = () =>
+  SLOT_GAMES.find((game) => game.id === getStoredActiveSlot()) || SLOT_GAMES[0];
+
 const getRandomSymbol = (symbols: SlotSymbol[]) => {
   const total = symbols.reduce((sum, symbol) => sum + symbol.weight, 0);
   let roll = Math.random() * total;
@@ -289,6 +293,7 @@ const collectClusters = (game: SlotGameConfig, grid: string[][]) => {
 
 const evaluateCascade = (game: SlotGameConfig, startingGrid: string[][], bet: number): SpinResult => {
   let grid = startingGrid;
+  let displayGrid = startingGrid;
   let totalWin = 0;
   let cascadeCount = 0;
   let lastMatched: string[] = [];
@@ -300,6 +305,7 @@ const evaluateCascade = (game: SlotGameConfig, startingGrid: string[][], bet: nu
 
     cascadeCount = chain;
     lastMatched = clusters.flat();
+    displayGrid = grid;
     const chainWin = clusters.reduce((sum, cluster) => {
       const [row, col] = cluster[0].split('-').map(Number);
       const symbol = findSymbol(game, grid[row][col]);
@@ -310,11 +316,12 @@ const evaluateCascade = (game: SlotGameConfig, startingGrid: string[][], bet: nu
   }
 
   return {
-    grid,
+    grid: displayGrid,
     win: totalWin,
     matchedCells: lastMatched,
     cascadeCount,
     scatterCount,
+    settledGrid: cascadeCount > 0 ? grid : undefined,
     freeSpinAward: scatterCount >= 3 ? 6 : 0,
     bonusTriggered: scatterCount >= 3 ? '6 free-drop tickets from Nexus scatters' : undefined,
     message: cascadeCount > 0 ? `${cascadeCount} cascade chain: +${totalWin}` : 'No cluster formed yet',
@@ -368,23 +375,25 @@ const evaluateVault = (
 };
 
 export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlotSectionProps) {
+  const [initialGame] = useState<SlotGameConfig>(getStoredActiveGame);
   const sectionRef = useRef<HTMLElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const tickerRef = useRef<HTMLDivElement>(null);
   const autoSpinRef = useRef(false);
+  const isSpinningRef = useRef(false);
   const timeoutsRef = useRef<number[]>([]);
   const creditTweenRef = useRef<ReturnType<typeof gsap.to> | null>(null);
-  const activeGameRef = useRef<SlotGameConfig>(SLOT_GAMES[0]);
+  const activeGameRef = useRef<SlotGameConfig>(initialGame);
   const bonusRef = useRef<BonusState>(getStoredBonusState());
   const creditsRef = useRef(getStoredCredits());
   const performSpinRef = useRef(() => {});
 
-  const [activeGameId, setActiveGameId] = useState<SlotGameId>(getStoredActiveSlot);
+  const [activeGameId, setActiveGameId] = useState<SlotGameId>(initialGame.id);
   const activeGame = useMemo(
     () => SLOT_GAMES.find((game) => game.id === activeGameId) || SLOT_GAMES[0],
     [activeGameId]
   );
-  const [grid, setGrid] = useState(() => createGrid(SLOT_GAMES.find((game) => game.id === getStoredActiveSlot()) || SLOT_GAMES[0]));
+  const [grid, setGrid] = useState(() => createGrid(initialGame));
   const [matchedCells, setMatchedCells] = useState<string[]>([]);
   const [vaultLockedCells, setVaultLockedCells] = useState<string[]>([]);
   const [bonusState, setBonusState] = useState<BonusState>(getStoredBonusState);
@@ -392,7 +401,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   const [isAutoSpin, setIsAutoSpin] = useState(false);
   const [credits, setCredits] = useState(getStoredCredits);
   const [displayCredits, setDisplayCredits] = useState(getStoredCredits);
-  const [bet, setBet] = useState(10);
+  const [bet, setBet] = useState(initialGame.betOptions[0]);
   const [lastWin, setLastWin] = useState(0);
   const [message, setMessage] = useState('CHOOSE A SLOT AND SPIN');
   const [muted, setMuted] = useState(false);
@@ -422,6 +431,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   useEffect(() => { activeGameRef.current = activeGame; }, [activeGame]);
   useEffect(() => { bonusRef.current = bonusState; }, [bonusState]);
   useEffect(() => { autoSpinRef.current = isAutoSpin; }, [isAutoSpin]);
+  useEffect(() => { isSpinningRef.current = isSpinning; }, [isSpinning]);
   useEffect(() => { creditsRef.current = credits; }, [credits]);
   useEffect(() => { AudioEngine.setMuted(muted); }, [muted]);
 
@@ -490,6 +500,11 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   }, [winnerIdx]);
 
   const activateGame = useCallback((gameId: SlotGameId) => {
+    if (isSpinningRef.current) return;
+    clearSpinTimeouts();
+    autoSpinRef.current = false;
+    setIsAutoSpin(false);
+
     const nextGame = SLOT_GAMES.find((game) => game.id === gameId) || SLOT_GAMES[0];
     activeGameRef.current = nextGame;
     setActiveGameId(nextGame.id);
@@ -505,7 +520,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
     } catch {
       // localStorage unavailable
     }
-  }, []);
+  }, [clearSpinTimeouts]);
 
   useEffect(() => {
     const refreshRewards = () => {
@@ -641,12 +656,19 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         multiplierPasses: Math.max(0, mystery.state.multiplierPasses - (current.multiplierPasses > 0 ? 1 : 0)),
         streak: nextStreak,
         activeBoost: nextStreak >= 3 ? 2 : 1,
-        vaultRespins: game.id === 'vault' ? (result.lockedCells && result.lockedCells.length >= 6 ? (result.bonusTriggered ? 3 : Math.max(0, current.vaultRespins - 1)) : 0) : current.vaultRespins,
+        vaultRespins: game.id === 'vault' ? (result.vaultRespins || 0) : current.vaultRespins,
       }));
 
       setGrid(result.grid);
       setMatchedCells(result.matchedCells);
       setLastWin(boostedWin + creditAward);
+
+      if (game.id === 'cascade' && result.settledGrid) {
+        scheduleTimeout(() => {
+          setGrid(result.settledGrid!);
+          setMatchedCells([]);
+        }, 650);
+      }
 
       if (boostedWin + creditAward > 0) {
         setCredits((value) => value + boostedWin + creditAward);
@@ -666,9 +688,9 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       setMessage(hasWin ? `${result.message}${boostLabel}${bonusLabel}${mysteryLabel}` : `${result.message}${bonusLabel}${mysteryLabel}`);
       setIsSpinning(false);
 
-      if (autoSpinRef.current || bonusRef.current.freeSpinTickets > 0) {
+      if (autoSpinRef.current) {
         scheduleTimeout(() => {
-          if (autoSpinRef.current || bonusRef.current.freeSpinTickets > 0) performSpinRef.current();
+          if (autoSpinRef.current) performSpinRef.current();
         }, 1400);
       }
     }, 900);
