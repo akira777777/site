@@ -84,7 +84,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
     <nav
       ref={navRef}
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-        scrolled ? 'bg-casino-ink/65 backdrop-blur-md' : 'bg-transparent'
+        scrolled ? 'bg-casino-ink/80 backdrop-blur-xl border-b border-casino-neon/10' : 'bg-transparent'
       }`}
     >
       <div className="absolute top-0 left-0 w-full h-[2px] bg-transparent">
@@ -117,8 +117,8 @@ export default function Navigation({ onReserve }: NavigationProps) {
                 key={item.id}
                 href={`#${item.id}`}
                 onClick={(e) => handleNavClick(e, item.id)}
-                className={`relative font-mono text-xs tracking-wide uppercase transition-colors ${
-                  isActive ? 'text-casino-neon' : 'text-casino-muted hover:text-casino-ivory'
+                className={`relative font-mono text-sm tracking-wide uppercase transition-all duration-300 ${
+                  isActive ? 'text-casino-neon [text-shadow:0_0_10px_rgba(176,38,255,0.8)]' : 'text-casino-muted hover:text-casino-ivory hover:[text-shadow:0_0_8px_rgba(255,255,255,0.6)]'
                 }`}
               >
                 {item.label}
@@ -130,7 +130,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
           })}
           <button
             onClick={onReserve}
-            className="font-mono text-xs px-5 py-2 bg-casino-neon/10 border border-casino-neon text-casino-neon rounded-full hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_15px_rgba(0,243,255,0.6)] transition-all uppercase tracking-wide cursor-pointer"
+            className="font-mono text-sm px-6 py-2 bg-casino-neon/10 border border-casino-neon text-casino-neon rounded-full hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_20px_rgba(176,38,255,0.8)] transition-all uppercase tracking-wide cursor-pointer"
           >
             Sign Up
           </button>

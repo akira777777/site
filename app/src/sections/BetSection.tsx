@@ -112,22 +112,25 @@ export default function BetSection() {
       {/* Horizontal rule */}
       <div
         ref={ruleRef}
-        className="absolute top-[56vh] left-[10vw] w-[80vw] h-px bg-casino-gold/30 origin-center"
+        className="absolute top-[56vh] left-[10vw] w-[80vw] h-px bg-casino-gold/50 origin-center [box-shadow:0_0_15px_rgba(255,215,0,0.8)]"
       />
+
+      {/* Headline Backdrop Glow */}
+      <div className="absolute top-[62vh] left-1/2 -translate-x-1/2 w-[60vw] h-[20vh] bg-casino-neon/10 blur-[80px] rounded-full pointer-events-none" />
 
       {/* Headline */}
       <h2
         ref={headlineRef}
-        className="absolute top-[62vh] left-1/2 -translate-x-1/2 w-[92vw] text-center font-serif text-5xl md:text-7xl lg:text-8xl text-casino-ivory uppercase"
+        className="absolute top-[62vh] left-1/2 -translate-x-1/2 w-[92vw] text-center font-serif text-5xl md:text-7xl lg:text-8xl text-casino-ivory uppercase [text-shadow:0_0_30px_rgba(176,38,255,0.6),_0_0_10px_rgba(255,255,255,0.3)]"
       >
         Hit the Jackpot
       </h2>
 
       {/* Micro captions */}
-      <p className="absolute bottom-[6vh] left-[6vw] font-mono text-xs text-casino-muted/80">
+      <p className="absolute bottom-[12vh] left-[6vw] font-mono text-xs text-casino-muted/80">
         Game Provider / Neon Slots
       </p>
-      <p className="absolute bottom-[6vh] right-[6vw] font-mono text-xs text-casino-muted/80">
+      <p className="absolute bottom-[12vh] right-[6vw] font-mono text-xs text-casino-muted/80">
         Volatility / High
       </p>
 

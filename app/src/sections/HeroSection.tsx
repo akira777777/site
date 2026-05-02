@@ -296,7 +296,15 @@ export default function HeroSection() {
         </div>
       )}
 
-      {/* Content overlay */}
+      {/* Content overlay backdrop */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[1]"
+        style={{
+          background: 'radial-gradient(circle at 20% 50%, rgba(8,6,18,0.85) 0%, transparent 60%)',
+        }}
+      />
+      
+      {/* Content text */}
       <div
         ref={textRef}
         className="absolute left-[6vw] top-1/2 -translate-y-1/2 max-w-xl z-[2]"
@@ -304,7 +312,7 @@ export default function HeroSection() {
         <p className="hero-animate font-mono text-xs text-casino-muted mb-4 tracking-widest uppercase opacity-0">
           Lobby / Online Slots
         </p>
-        <h1 className="hero-animate font-serif text-5xl md:text-7xl text-casino-gold leading-[1.05] mb-6 uppercase opacity-0 [text-shadow:0_0_20px_rgba(255,_215,_0,_0.4)]">
+        <h1 className="hero-animate font-serif text-5xl md:text-7xl text-casino-gold leading-[1.05] mb-6 uppercase opacity-0 [text-shadow:0_0_25px_rgba(255,215,0,0.6),_0_2px_10px_rgba(0,0,0,0.8)] relative">
           The Ultimate<br />
           Slot<br />
           Experience.
