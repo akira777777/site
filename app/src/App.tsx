@@ -1,15 +1,20 @@
+import { Suspense, lazy } from 'react'
 import { Routes, Route } from 'react-router'
 import ErrorBoundary from './components/ErrorBoundary'
-import Home from './pages/Home'
-import Superpowers from './pages/Superpowers'
+import SuspenseLoader from './components/SuspenseLoader/SuspenseLoader'
+
+const Home = lazy(() => import('./pages/Home'))
+const Superpowers = lazy(() => import('./pages/Superpowers'))
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/superpowers" element={<Superpowers />} />
-      </Routes>
+      <Suspense fallback={<SuspenseLoader />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/superpowers" element={<Superpowers />} />
+        </Routes>
+      </Suspense>
     </ErrorBoundary>
   )
 }
