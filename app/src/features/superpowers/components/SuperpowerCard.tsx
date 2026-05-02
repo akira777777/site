@@ -20,6 +20,11 @@ export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive,
     onSelect(power.id, power.price);
   }, [power.id, power.price, onSelect]);
 
+  const handleButtonClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    handleSelect();
+  }, [handleSelect]);
+
   const buttonText = useMemo(() => 
     isActive ? 'System Equipped' : 'Initialize Protocol', 
     [isActive]
@@ -172,7 +177,7 @@ export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive,
           fullWidth
           variant={isActive ? "contained" : "outlined"}
           color="primary"
-          onClick={handleSelect}
+          onClick={handleButtonClick}
           sx={{
             py: 1.5,
             fontWeight: 800,
