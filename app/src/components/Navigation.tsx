@@ -91,10 +91,9 @@ export default function Navigation({ onReserve }: NavigationProps) {
       {/* Scroll progress bar */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-transparent">
         <div
-          className="h-full bg-casino-neon transition-[width] duration-100 ease-out"
+          className="h-full bg-casino-neon transition-[width] duration-100 ease-out [box-shadow:0_0_8px_rgba(176,38,255,0.8)]"
           style={{
-            width: `${progress * 100}%`,
-            boxShadow: '0 0 8px rgba(176,38,255,0.8)',
+            width: `${progress * 100}%`
           }}
         />
       </div>
