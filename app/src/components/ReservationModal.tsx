@@ -37,8 +37,12 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
     setSubmitted(true);
     
     // Simulate API call and add bonus credits
-    const currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
-    localStorage.setItem('casino_credits', (currentCredits + 1000).toString());
+    try {
+      const currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
+      localStorage.setItem('casino_credits', (currentCredits + 1000).toString());
+    } catch {
+      // localStorage unavailable (private mode, storage disabled)
+    }
 
     setTimeout(() => {
       setSubmitted(false);

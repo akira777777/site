@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import confetti from 'canvas-confetti';
 import { Gem, Crown, Bell, Star, Flame, Coins, Volume2, VolumeX, RotateCcw, Trophy } from 'lucide-react';
+import { AudioEngine } from '../utils/audioEngine';
 
 const SYMBOLS_DATA = [
   { id: 'coins',  icon: Coins,  color: '#facc15', weight: 40, payout: 2,   label: 'Coins'  },
@@ -86,7 +87,8 @@ export default function PlayableSlotSection() {
       onUpdate: () => { setDisplayCredits(Math.round(obj.val)); } });
   }, [credits, displayCredits]);
 
-  // Rotate live winners ticker
+  // Sync muted state with AudioEngine
+  useEffect(() => { AudioEngine.setMuted(muted); }, [muted]);
   useEffect(() => {
     const id = setInterval(() => setWinnerIdx(i => (i + 1) % FAKE_WINNERS.length), 3000);
     return () => clearInterval(id);
@@ -118,6 +120,7 @@ export default function PlayableSlotSection() {
     if (!isFreeSpinMode) setCredits(p => p - bet);
     setLastWin(0);
     setMessage(isFreeSpinMode ? `FREE SPIN! (${freeSpins} left)` : 'SPINNING...');
+    AudioEngine.spinStart();
 
     reelsRef.current.forEach((reel) => {
       if (reel) gsap.to(reel, { y: '+=100%', duration: 0.07, repeat: -1, ease: 'none',
@@ -130,6 +133,7 @@ export default function PlayableSlotSection() {
       setTimeout(() => {
         const reel = reelsRef.current[col];
         if (reel) { gsap.killTweensOf(reel); gsap.fromTo(reel, { y: '-10%' }, { y: '0%', duration: 0.3, ease: 'bounce.out' }); }
+        AudioEngine.reelStop(col);
         setGrid(prev => {
           const g = prev.map(r => [...r]);
           g[0][col] = newGrid[0][col]; g[1][col] = newGrid[1][col]; g[2][col] = newGrid[2][col];
@@ -165,10 +169,11 @@ export default function PlayableSlotSection() {
         setFreeSpins(10); setIsFreeSpinMode(true);
         setMessage('🎉 10 FREE SPINS UNLOCKED!');
         fireConfetti();
+        AudioEngine.freeSpinsUnlocked();
       } else if (totalWin > 0) {
         setCredits(p => p + totalWin); setLastWin(totalWin); setWinningLines(matched);
-        if (totalWin >= bet * 25) { setMessage(`💎 MEGA WIN! +${totalWin}`); fireConfetti(); }
-        else { setMessage(`🎉 WINNER! +${totalWin}`); }
+        if (totalWin >= bet * 25) { setMessage(`💎 MEGA WIN! +${totalWin}`); fireConfetti(); AudioEngine.bigWin(); }
+        else { setMessage(`🎉 WINNER! +${totalWin}`); AudioEngine.smallWin(); }
       } else if (!isFreeSpinMode || freeSpins <= 1) {
         setMessage('PLACE YOUR BETS');
       }

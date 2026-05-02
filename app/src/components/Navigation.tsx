@@ -23,7 +23,8 @@ export default function Navigation({ onReserve }: NavigationProps) {
     setMobileOpen(false);
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
   };
 
@@ -46,7 +47,8 @@ export default function Navigation({ onReserve }: NavigationProps) {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
             setMobileOpen(false);
           }}
           className="font-serif text-casino-ivory text-xl tracking-tight hover:opacity-100 opacity-80 transition-opacity uppercase"

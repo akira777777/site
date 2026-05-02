@@ -12,6 +12,7 @@ import PeopleSection from '../sections/PeopleSection';
 import PhilosophySection from '../sections/PhilosophySection';
 import ClosingStatementSection from '../sections/ClosingStatementSection';
 import PlayableSlotSection from '../sections/PlayableSlotSection';
+import LeaderboardSection from '../sections/LeaderboardSection';
 import FooterSection from '../sections/FooterSection';
 
 export default function Home() {
@@ -21,6 +22,8 @@ export default function Home() {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
+
+    let snapTrigger: ScrollTrigger | null = null;
 
     // Wait for all ScrollTriggers to be created
     const timer = setTimeout(() => {
@@ -38,7 +41,7 @@ export default function Home() {
       }));
 
       // Global snap for pinned sections only
-      ScrollTrigger.create({
+      snapTrigger = ScrollTrigger.create({
         snap: {
           snapTo: (value) => {
             const inPinned = pinnedRanges.some(
@@ -64,7 +67,7 @@ export default function Home() {
 
     return () => {
       clearTimeout(timer);
-      ScrollTrigger.getAll().forEach((st) => st.kill());
+      snapTrigger?.kill();
     };
   }, []);
 
@@ -87,6 +90,7 @@ export default function Home() {
 
       {/* Flowing sections */}
       <PlayableSlotSection />
+      <LeaderboardSection />
       <FooterSection onReserve={() => setReserveOpen(true)} />
 
       {/* Global ambient background glow to reduce static black feeling */}

@@ -7,6 +7,8 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
   useEffect(() => {
     let raf: number;
     let start: number | null = null;
+    let fadeTimeout: ReturnType<typeof setTimeout>;
+    let doneTimeout: ReturnType<typeof setTimeout>;
     const duration = 1800;
 
     const step = (timestamp: number) => {
@@ -20,15 +22,19 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
       if (p < 1) {
         raf = requestAnimationFrame(step);
       } else {
-        setTimeout(() => {
+        fadeTimeout = setTimeout(() => {
           setFadeOut(true);
-          setTimeout(onDone, 600);
+          doneTimeout = setTimeout(onDone, 600);
         }, 300);
       }
     };
 
     raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(fadeTimeout);
+      clearTimeout(doneTimeout);
+    };
   }, [onDone]);
 
   return (

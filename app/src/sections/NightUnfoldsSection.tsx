@@ -91,7 +91,7 @@ export default function NightUnfoldsSection() {
         ref={imageRef}
         src="/images/slot_spins.png"
         alt="Free Spins Bonus"
-        className="absolute inset-0 w-full h-full object-cover transition-all duration-[2000ms] hover:brightness-125 hover:saturate-150"
+        className="absolute inset-0 w-full h-full object-cover transition-all duration-[2s] hover:brightness-125 hover:saturate-150"
       />
 
       {/* Vignette */}

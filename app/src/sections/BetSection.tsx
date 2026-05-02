@@ -17,13 +17,15 @@ export default function BetSection() {
     const ticker = tickerRef.current;
     if (!section || !image || !headline || !rule || !ticker) return;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: 'top top',
         end: '+=90%',
         pin: true,
-        scrub: 0.6,
+        scrub: prefersReducedMotion ? false : 0.6,
       },
     });
 

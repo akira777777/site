@@ -109,12 +109,14 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
             <div className="flex gap-4 mt-8">
               <a
                 href="#"
+                aria-label="Instagram"
                 className="w-10 h-10 rounded-full border border-casino-ivory/20 flex items-center justify-center text-casino-muted hover:text-casino-ivory hover:border-casino-ember transition-all"
               >
                 <Instagram className="w-4 h-4" />
               </a>
               <a
                 href="#"
+                aria-label="Twitter"
                 className="w-10 h-10 rounded-full border border-casino-ivory/20 flex items-center justify-center text-casino-muted hover:text-casino-ivory hover:border-casino-ember transition-all"
               >
                 <Twitter className="w-4 h-4" />
