@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 interface NavigationProps {
@@ -9,6 +9,7 @@ interface NavigationProps {
 
 export default function Navigation({ onReserve }: NavigationProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>('');
@@ -35,6 +36,12 @@ export default function Navigation({ onReserve }: NavigationProps) {
 
   // Active section tracking via ScrollTrigger
   useEffect(() => {
+    if (location.pathname !== '/') {
+      triggersRef.current.forEach((st) => st.kill());
+      triggersRef.current = [];
+      return;
+    }
+
     const sectionIds = ['play', 'bet', 'philosophy', 'contact'];
 
     // Small delay to ensure DOM sections are mounted
@@ -63,7 +70,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
       triggersRef.current.forEach((st) => st.kill());
       triggersRef.current = [];
     };
-  }, []);
+  }, [location.pathname]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string, href?: string) => {
     if (href) {
@@ -127,7 +134,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
           {navItems.map((item) => {
-            const isActive = activeId === item.id;
+            const isActive = item.href ? location.pathname === item.href : location.pathname === '/' && activeId === item.id;
             return (
               <a
                 key={item.id}
@@ -172,7 +179,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
       >
         <div className="flex flex-col items-center gap-6 py-8">
           {navItems.map((item) => {
-            const isActive = activeId === item.id;
+            const isActive = item.href ? location.pathname === item.href : location.pathname === '/' && activeId === item.id;
             return (
               <a
                 key={item.id}

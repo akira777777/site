@@ -1,6 +1,7 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Box, Typography, Container } from '@mui/material';
 import Navigation from '../components/Navigation';
+import ReservationModal from '../components/ReservationModal';
 import FooterSection from '../sections/FooterSection';
 import SuspenseLoader from '../components/SuspenseLoader/SuspenseLoader';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -15,9 +16,12 @@ const SuperpowersFeature = React.lazy(() => import('../features/superpowers').th
  * Follows the Suspense-first, feature-based architecture.
  */
 const SuperpowersPage: React.FC = () => {
+  const [reserveOpen, setReserveOpen] = useState(false);
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default', color: 'text.primary' }}>
-      <Navigation onReserve={() => {}} />
+      <Navigation onReserve={() => setReserveOpen(true)} />
+      <ReservationModal open={reserveOpen} onOpenChange={setReserveOpen} />
 
       <Container maxWidth="lg" sx={{ pt: 20, pb: 10 }}>
         <Box sx={{ mb: 8 }}>
@@ -53,7 +57,7 @@ const SuperpowersPage: React.FC = () => {
         </ErrorBoundary>
       </Container>
 
-      <FooterSection onReserve={() => {}} />
+      <FooterSection onReserve={() => setReserveOpen(true)} />
     </Box>
   );
 };
