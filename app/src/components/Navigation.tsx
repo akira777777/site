@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 interface NavigationProps {
   onReserve: () => void;
@@ -11,6 +13,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
   const [activeId, setActiveId] = useState<string>('');
   const [progress, setProgress] = useState(0);
   const navRef = useRef<HTMLElement>(null);
+  const triggersRef = useRef<ScrollTrigger[]>([]);
 
   useEffect(() => {
     let rafId: number;
@@ -29,26 +32,36 @@ export default function Navigation({ onReserve }: NavigationProps) {
     };
   }, []);
 
-  // Active section tracking via IntersectionObserver
+  // Active section tracking via ScrollTrigger
   useEffect(() => {
     const sectionIds = ['play', 'bet', 'philosophy', 'contact'];
-    const elements = sectionIds.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null);
-    if (elements.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible.length > 0 && visible[0].target.id) {
-          setActiveId(visible[0].target.id);
-        }
-      },
-      { threshold: [0.25, 0.5, 0.75], rootMargin: '-40% 0px -40% 0px' }
-    );
+    // Small delay to ensure DOM sections are mounted
+    const timer = setTimeout(() => {
+      triggersRef.current.forEach((st) => st.kill());
+      triggersRef.current = [];
 
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const st = ScrollTrigger.create({
+          trigger: el,
+          start: 'top 60%',
+          end: 'bottom 40%',
+          onEnter: () => setActiveId(id),
+          onEnterBack: () => setActiveId(id),
+        });
+
+        triggersRef.current.push(st);
+      });
+    }, 600);
+
+    return () => {
+      clearTimeout(timer);
+      triggersRef.current.forEach((st) => st.kill());
+      triggersRef.current = [];
+    };
   }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {

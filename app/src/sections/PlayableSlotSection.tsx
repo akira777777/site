@@ -70,7 +70,11 @@ export default function PlayableSlotSection() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('casino_credits');
-      if (saved) { const v = parseInt(saved, 10); if (!isNaN(v)) { setCredits(v); setDisplayCredits(v); } }
+      if (saved) {
+        const v = parseInt(saved, 10);
+        if (!isNaN(v) && v >= 0) { setCredits(v); setDisplayCredits(v); }
+        else { localStorage.removeItem('casino_credits'); }
+      }
     } catch {
       // localStorage unavailable
     }
@@ -134,7 +138,9 @@ export default function PlayableSlotSection() {
     clearSpinTimeouts();
     let currentCredits = 1000;
     try {
-      currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
+      const saved = localStorage.getItem('casino_credits');
+      const parsed = parseInt(saved || '1000', 10);
+      currentCredits = !isNaN(parsed) && parsed >= 0 ? parsed : 1000;
     } catch {
       // localStorage unavailable
     }

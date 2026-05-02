@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Gift, Mail, Lock, User, CheckCircle2 } from 'lucide-react';
+import { Gift, Mail, Lock, User, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface SignUpModalProps {
   open: boolean;
@@ -25,6 +25,7 @@ interface SignUpModalProps {
 
 export default function ReservationModal({ open, onOpenChange }: SignUpModalProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -32,30 +33,63 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
     bonus: '',
   });
 
+  const errors = useMemo(() => {
+    const e: Record<string, string> = {};
+    if (touched.username && form.username.length < 3) {
+      e.username = 'Username must be at least 3 characters';
+    }
+    if (touched.email && form.email) {
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRe.test(form.email)) e.email = 'Please enter a valid email';
+    }
+    if (touched.password && form.password.length < 6) {
+      e.password = 'Password must be at least 6 characters';
+    }
+    if (touched.bonus && !form.bonus) {
+      e.bonus = 'Please select a bonus';
+    }
+    return e;
+  }, [form, touched]);
+
+  const isValid =
+    form.username.length >= 3 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) &&
+    form.password.length >= 6 &&
+    !!form.bonus;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched({ username: true, email: true, password: true, bonus: true });
+    if (!isValid) return;
+
     setSubmitted(true);
-    
-    // Simulate API call and add bonus credits
+
     try {
-      const currentCredits = parseInt(localStorage.getItem('casino_credits') || '1000', 10);
+      const saved = localStorage.getItem('casino_credits');
+      const parsed = parseInt(saved || '1000', 10);
+      const currentCredits = !isNaN(parsed) && parsed >= 0 ? parsed : 1000;
       localStorage.setItem('casino_credits', (currentCredits + 1000).toString());
     } catch {
-      // localStorage unavailable (private mode, storage disabled)
+      // localStorage unavailable
     }
 
     setTimeout(() => {
       setSubmitted(false);
       setForm({ username: '', email: '', password: '', bonus: '' });
+      setTouched({});
       onOpenChange(false);
-      // We could trigger an event here to refresh credits in the slot machine,
-      // but for this demo, reloading or spinning will resync.
     }, 2500);
   };
 
   const update = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
   };
+
+  const inputClass = (field: string) =>
+    `bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/30 focus-visible:ring-casino-neon ${
+      touched[field] && errors[field] ? 'border-casino-ember focus-visible:ring-casino-ember' : ''
+    }`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -78,19 +112,26 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4" noValidate>
+
             <div className="space-y-1.5">
               <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
                 <User className="w-3 h-3 text-casino-neon" /> Username
               </Label>
               <Input
                 required
+                minLength={3}
                 value={form.username}
                 onChange={(e) => update('username', e.target.value)}
+                onBlur={() => setTouched((p) => ({ ...p, username: true }))}
                 placeholder="cyber_spinner_99"
-                className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/30 focus-visible:ring-casino-neon"
+                className={inputClass('username')}
               />
+              {touched.username && errors.username && (
+                <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.username}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -102,9 +143,15 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
                 type="email"
                 value={form.email}
                 onChange={(e) => update('email', e.target.value)}
+                onBlur={() => setTouched((p) => ({ ...p, email: true }))}
                 placeholder="you@example.com"
-                className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/30 focus-visible:ring-casino-neon"
+                className={inputClass('email')}
               />
+              {touched.email && errors.email && (
+                <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -114,11 +161,18 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
               <Input
                 required
                 type="password"
+                minLength={6}
                 value={form.password}
                 onChange={(e) => update('password', e.target.value)}
+                onBlur={() => setTouched((p) => ({ ...p, password: true }))}
                 placeholder="••••••••"
-                className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory placeholder:text-casino-muted/30 focus-visible:ring-casino-neon"
+                className={inputClass('password')}
               />
+              {touched.password && errors.password && (
+                <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.password}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5 pt-2">
@@ -126,7 +180,7 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
                 <Gift className="w-3 h-3 text-casino-gold" /> Select Welcome Bonus
               </Label>
               <Select value={form.bonus} onValueChange={(v) => update('bonus', v)} required>
-                <SelectTrigger className="bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory focus:ring-casino-neon">
+                <SelectTrigger className={`bg-casino-ink/50 border-casino-ivory/10 text-casino-ivory focus:ring-casino-neon ${touched.bonus && errors.bonus ? 'border-casino-ember' : ''}`}>
                   <SelectValue placeholder="Choose your bonus" />
                 </SelectTrigger>
                 <SelectContent className="bg-casino-charcoal border-casino-neon/30 text-casino-ivory">
@@ -135,11 +189,17 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
                   <SelectItem value="match" className="focus:bg-casino-neon/20 focus:text-casino-neon">200% Deposit Match</SelectItem>
                 </SelectContent>
               </Select>
+              {touched.bonus && errors.bonus && (
+                <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.bonus}
+                </p>
+              )}
             </div>
 
             <Button
               type="submit"
-              className="w-full mt-6 bg-casino-neon/20 border border-casino-neon hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_20px_rgba(0,243,255,0.6)] text-casino-neon rounded-full font-mono text-sm uppercase tracking-widest transition-all duration-300 h-12"
+              disabled={!isValid}
+              className="w-full mt-6 bg-casino-neon/20 border border-casino-neon hover:bg-casino-neon hover:text-casino-ink hover:shadow-[0_0_20px_rgba(0,243,255,0.6)] text-casino-neon rounded-full font-mono text-sm uppercase tracking-widest transition-all duration-300 h-12 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Claim Bonus & Play
             </Button>

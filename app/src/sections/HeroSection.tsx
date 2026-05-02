@@ -207,9 +207,17 @@ export default function HeroSection() {
     observer.observe(canvas);
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
+      stopLoop();
       window.removeEventListener('resize', resize);
       observer.disconnect();
+      // Clean up WebGL resources
+      if (gl) {
+        if (program) gl.deleteProgram(program);
+        if (vs) gl.deleteShader(vs);
+        if (fs) gl.deleteShader(fs);
+        if (posBuffer) gl.deleteBuffer(posBuffer);
+        if (texture) gl.deleteTexture(texture);
+      }
     };
   }, []);
 
