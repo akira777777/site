@@ -3,6 +3,9 @@ export const AudioEngine = (() => {
   let muted = false;
   let ambientGain: GainNode | null = null;
   let hasStartedAmbient = false;
+  let ambientOscillators: OscillatorNode[] = [];
+  let ambientNodes: AudioNode[] = [];
+  let pendingTimeouts: number[] = [];
 
   const getCtx = () => {
     if (!ctx) ctx = new AudioContext();
@@ -17,6 +20,7 @@ export const AudioEngine = (() => {
       ambientGain = ac.createGain();
       ambientGain.connect(ac.destination);
       ambientGain.gain.value = 0.05; // very low volume
+      ambientNodes.push(ambientGain);
 
       // Create a chord for the drone
       const freqs = [65.41, 98.00, 130.81]; // C2, G2, C3
@@ -34,6 +38,8 @@ export const AudioEngine = (() => {
         
         osc.connect(lfoGain);
         lfoGain.connect(ambientGain!);
+        ambientOscillators.push(osc, lfo);
+        ambientNodes.push(lfoGain);
         
         osc.start();
         lfo.start();
@@ -62,6 +68,33 @@ export const AudioEngine = (() => {
     } catch { /* user hasn't interacted yet */ }
   };
 
+  const schedule = (callback: () => void, delay: number) => {
+    const id = window.setTimeout(() => {
+      pendingTimeouts = pendingTimeouts.filter((timeoutId) => timeoutId !== id);
+      callback();
+    }, delay);
+    pendingTimeouts.push(id);
+  };
+
+  const clearScheduled = () => {
+    pendingTimeouts.forEach((id) => clearTimeout(id));
+    pendingTimeouts = [];
+  };
+
+  const stopAmbient = () => {
+    ambientOscillators.forEach((oscillator) => {
+      try { oscillator.stop(); } catch { /* oscillator already stopped */ }
+      try { oscillator.disconnect(); } catch { /* node already disconnected */ }
+    });
+    ambientNodes.forEach((node) => {
+      try { node.disconnect(); } catch { /* node already disconnected */ }
+    });
+    ambientOscillators = [];
+    ambientNodes = [];
+    ambientGain = null;
+    hasStartedAmbient = false;
+  };
+
   return {
     setMuted: (m: boolean) => { 
       muted = m; 
@@ -74,7 +107,7 @@ export const AudioEngine = (() => {
       startAmbient();
       // Whirring reel sound - rapid descending tones
       [0, 60, 120].forEach(delay => {
-        setTimeout(() => playTone(200 + Math.random() * 100, 'sawtooth', 0.08, 0.08), delay);
+        schedule(() => playTone(200 + Math.random() * 100, 'sawtooth', 0.08, 0.08), delay);
       });
     },
 
@@ -82,32 +115,37 @@ export const AudioEngine = (() => {
       // Thud per reel
       const freqs = [180, 160, 140];
       playTone(freqs[reelIndex], 'square', 0.12, 0.15);
-      setTimeout(() => playTone(freqs[reelIndex] * 0.5, 'sine', 0.1, 0.08), 30);
+      schedule(() => playTone(freqs[reelIndex] * 0.5, 'sine', 0.1, 0.08), 30);
     },
 
     smallWin: () => {
       // Ascending coin chime
       [523, 659, 784, 1047].forEach((f, i) =>
-        setTimeout(() => playTone(f, 'sine', 0.18, 0.2), i * 80));
+        schedule(() => playTone(f, 'sine', 0.18, 0.2), i * 80));
     },
 
     bigWin: () => {
       // Fanfare
       [523, 659, 784, 1047, 1319].forEach((f, i) =>
-        setTimeout(() => playTone(f, 'sine', 0.25, 0.25), i * 100));
-      setTimeout(() => [523, 659, 784, 1047].forEach((f, i) =>
-        setTimeout(() => playTone(f, 'triangle', 0.3, 0.2), i * 80)), 600);
+        schedule(() => playTone(f, 'sine', 0.25, 0.25), i * 100));
+      schedule(() => [523, 659, 784, 1047].forEach((f, i) =>
+        schedule(() => playTone(f, 'triangle', 0.3, 0.2), i * 80)), 600);
     },
 
     freeSpinsUnlocked: () => {
       // Special ascending fanfare
       [392, 523, 659, 784, 1047, 1319].forEach((f, i) =>
-        setTimeout(() => playTone(f, 'sine', 0.3, 0.3), i * 120));
+        schedule(() => playTone(f, 'sine', 0.3, 0.3), i * 120));
     },
 
     coinClink: () => {
       playTone(1200, 'sine', 0.06, 0.1);
-      setTimeout(() => playTone(1400, 'sine', 0.04, 0.08), 40);
+      schedule(() => playTone(1400, 'sine', 0.04, 0.08), 40);
+    },
+
+    stopAmbient: () => {
+      clearScheduled();
+      stopAmbient();
     },
   };
 })();

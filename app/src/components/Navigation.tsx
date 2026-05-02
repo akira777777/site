@@ -14,6 +14,9 @@ const navItems = [
   { label: 'Superpowers', id: 'superpowers', href: '/superpowers' },
 ];
 
+const scrollBehavior = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+
 export default function Navigation({ onReserve }: NavigationProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,11 +38,11 @@ export default function Navigation({ onReserve }: NavigationProps) {
     e.preventDefault();
     if (location.pathname !== '/') {
       navigate(`/#${id}`);
-      window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 60);
+      window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: scrollBehavior() }), 60);
       return;
     }
 
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(id)?.scrollIntoView({ behavior: scrollBehavior() });
   };
 
   return (
@@ -54,7 +57,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
           onClick={(e) => {
             if (location.pathname === '/') {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: scrollBehavior() });
             }
             setMobileOpen(false);
           }}

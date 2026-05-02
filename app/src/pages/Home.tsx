@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowRight,
   BadgeCheck,
@@ -14,26 +14,40 @@ import {
 } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import ReservationModal from '../components/ReservationModal';
-import PlayableSlotSection from '../sections/PlayableSlotSection';
-import LeaderboardSection from '../sections/LeaderboardSection';
 import FooterSection from '../sections/FooterSection';
+
+const PlayableSlotSection = lazy(() => import('../sections/PlayableSlotSection'));
+const LeaderboardSection = lazy(() => import('../sections/LeaderboardSection'));
+
+const responsiveWidths = [480, 768, 1024];
+
+const webpSrcSet = (imageBase: string) =>
+  responsiveWidths
+    .map((width) => `/images/generated/${imageBase}-${width}.webp ${width}w`)
+    .join(', ');
+
+const scrollBehavior = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
 const featuredGames = [
   {
     title: 'Neon Reels',
-    image: '/images/slot_neon.png',
+    imageBase: 'slot_neon',
+    fallback: '/images/slot_neon.png',
     tag: '96.8% RTP',
     copy: 'Fast rounds, bright symbols, and volatile bonus ladders.',
   },
   {
     title: 'Gold Vault',
-    image: '/images/slot_jackpot.png',
+    imageBase: 'slot_jackpot',
+    fallback: '/images/slot_jackpot.png',
     tag: 'Mega Drops',
     copy: 'Stacked wilds, vault multipliers, and jackpot chases.',
   },
   {
     title: 'Cyber Fruits',
-    image: '/images/slot_symbols.png',
+    imageBase: 'slot_symbols',
+    fallback: '/images/slot_symbols.png',
     tag: 'New',
     copy: 'Classic slot rhythm with modern boosts and free spins.',
   },
@@ -52,11 +66,130 @@ const steps = [
   'Climb the leaderboard',
 ];
 
+interface ResponsiveImageProps {
+  imageBase: string;
+  fallback: string;
+  alt: string;
+  sizes: string;
+  className?: string;
+  pictureClassName?: string;
+  loading?: 'eager' | 'lazy';
+  fetchPriority?: 'high' | 'low' | 'auto';
+}
+
+function ResponsiveImage({
+  imageBase,
+  fallback,
+  alt,
+  sizes,
+  className,
+  pictureClassName,
+  loading = 'lazy',
+  fetchPriority = 'auto',
+}: ResponsiveImageProps) {
+  return (
+    <picture className={pictureClassName}>
+      <source type="image/webp" srcSet={webpSrcSet(imageBase)} sizes={sizes} />
+      <img
+        src={fallback}
+        alt={alt}
+        className={className}
+        loading={loading}
+        decoding="async"
+        fetchPriority={fetchPriority}
+      />
+    </picture>
+  );
+}
+
+interface LazyLandingSectionProps {
+  sectionId: string;
+  label: string;
+  children: ReactNode;
+  minHeightClassName: string;
+  rootMargin?: string;
+}
+
+function SectionPlaceholder({
+  id,
+  label,
+  className,
+}: {
+  id?: string;
+  label: string;
+  className: string;
+}) {
+  return (
+    <section
+      id={id}
+      className={`relative flex items-center justify-center overflow-hidden ${className}`}
+      aria-label={label}
+    >
+      <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_50%_50%,_rgba(176,38,255,0.06)_0%,_transparent_60%)]" />
+      <div className="relative z-10 h-8 w-8 animate-spin rounded-full border-2 border-casino-cyber/25 border-t-casino-cyber" />
+    </section>
+  );
+}
+
+function LazyLandingSection({
+  sectionId,
+  label,
+  children,
+  minHeightClassName,
+  rootMargin = '700px 0px',
+}: LazyLandingSectionProps) {
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(
+    () => typeof window !== 'undefined' && !('IntersectionObserver' in window)
+  );
+
+  useEffect(() => {
+    if (shouldLoad) return;
+
+    const target = anchorRef.current;
+    if (!target) return;
+
+    if (!('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin, threshold: 0 }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [rootMargin, shouldLoad]);
+
+  return (
+    <div ref={anchorRef} id={!shouldLoad ? sectionId : undefined}>
+      {shouldLoad ? (
+        <Suspense
+          fallback={
+            <SectionPlaceholder
+              id={sectionId}
+              label={label}
+              className={minHeightClassName}
+            />
+          }
+        >
+          {children}
+        </Suspense>
+      ) : (
+        <SectionPlaceholder label={label} className={minHeightClassName} />
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const [reserveOpen, setReserveOpen] = useState(false);
 
   const scrollToPlay = () => {
-    document.getElementById('play')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('play')?.scrollIntoView({ behavior: scrollBehavior() });
   };
 
   return (
@@ -66,10 +199,15 @@ export default function Home() {
 
       <main>
         <section id="top" className="relative min-h-[92vh] overflow-hidden">
-          <img
-            src="/images/slot_hero.png"
+          <ResponsiveImage
+            imageBase="slot_hero"
+            fallback="/images/slot_hero.png"
             alt="Cyber Slots jackpot cabinet"
+            sizes="100vw"
+            pictureClassName="absolute inset-0 block h-full w-full"
             className="absolute inset-0 h-full w-full object-cover object-center"
+            loading="eager"
+            fetchPriority="high"
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,6,18,0.96)_0%,rgba(8,6,18,0.78)_44%,rgba(8,6,18,0.22)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(0deg,#080612_0%,rgba(8,6,18,0)_100%)]" />
@@ -138,9 +276,12 @@ export default function Home() {
               {featuredGames.map((game) => (
                 <article key={game.title} className="group overflow-hidden border border-casino-ivory/12 bg-casino-charcoal/70">
                   <div className="aspect-[4/3] overflow-hidden bg-black">
-                    <img
-                      src={game.image}
+                    <ResponsiveImage
+                      imageBase={game.imageBase}
+                      fallback={game.fallback}
                       alt={`${game.title} slot preview`}
+                      sizes="(min-width: 768px) 31vw, 100vw"
+                      pictureClassName="block h-full w-full"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                       loading="lazy"
                     />
@@ -210,8 +351,20 @@ export default function Home() {
           </div>
         </section>
 
-        <PlayableSlotSection />
-        <LeaderboardSection />
+        <LazyLandingSection
+          sectionId="play"
+          label="Loading playable slot"
+          minHeightClassName="min-h-screen bg-casino-ink"
+        >
+          <PlayableSlotSection sectionId="play" />
+        </LazyLandingSection>
+        <LazyLandingSection
+          sectionId="jackpots"
+          label="Loading leaderboard"
+          minHeightClassName="min-h-[70vh] bg-casino-charcoal"
+        >
+          <LeaderboardSection sectionId="jackpots" />
+        </LazyLandingSection>
 
         <section className="relative bg-[#0d0918] px-[6vw] py-20">
           <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 border border-casino-neon/25 bg-casino-ink/80 p-6 md:grid-cols-[1fr_auto] md:p-8">

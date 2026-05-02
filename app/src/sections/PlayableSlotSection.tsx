@@ -59,10 +59,17 @@ const getStoredCredits = () => {
   return 1000;
 };
 
-export default function PlayableSlotSection() {
+interface PlayableSlotSectionProps {
+  sectionId?: string;
+}
+
+export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlotSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const reelsRef = useRef<(HTMLDivElement | null)[]>([]);
   const autoSpinRef = useRef(false);
+  const freeSpinsRef = useRef(0);
+  const isFreeSpinModeRef = useRef(false);
+  const creditTweenRef = useRef<ReturnType<typeof gsap.to> | null>(null);
   const tickerRef = useRef<HTMLDivElement>(null);
   const performSpinRef = useRef(() => {});
   const timeoutsRef = useRef<number[]>([]);
@@ -85,9 +92,23 @@ export default function PlayableSlotSection() {
   const clearSpinTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(id => clearTimeout(id));
     timeoutsRef.current = [];
+    reelsRef.current.forEach((reel) => {
+      if (reel) gsap.killTweensOf(reel);
+    });
+  }, []);
+
+  const scheduleTimeout = useCallback((callback: () => void, delay: number) => {
+    const id = window.setTimeout(() => {
+      timeoutsRef.current = timeoutsRef.current.filter((timeoutId) => timeoutId !== id);
+      callback();
+    }, delay);
+    timeoutsRef.current.push(id);
+    return id;
   }, []);
 
   const fireConfetti = useCallback(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const end = Date.now() + 3000;
     const frame = () => {
       confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#b026ff','#ffd700','#00f3ff'] });
@@ -98,6 +119,8 @@ export default function PlayableSlotSection() {
   }, []);
 
   useEffect(() => { autoSpinRef.current = isAutoSpin; }, [isAutoSpin]);
+  useEffect(() => { freeSpinsRef.current = freeSpins; }, [freeSpins]);
+  useEffect(() => { isFreeSpinModeRef.current = isFreeSpinMode; }, [isFreeSpinMode]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -107,6 +130,8 @@ export default function PlayableSlotSection() {
       scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' } });
     return () => {
       clearSpinTimeouts();
+      creditTweenRef.current?.kill();
+      AudioEngine.stopAmbient();
       ScrollTrigger.getAll().forEach(st => { if (st.vars.trigger === section) st.kill(); });
     };
   }, [clearSpinTimeouts]);
@@ -124,8 +149,13 @@ export default function PlayableSlotSection() {
   useEffect(() => {
     if (displayCredits === credits) return;
     const obj = { val: displayCredits };
-    gsap.to(obj, { val: credits, duration: 1.2, ease: 'power2.out',
+    creditTweenRef.current?.kill();
+    creditTweenRef.current = gsap.to(obj, { val: credits, duration: 1.2, ease: 'power2.out',
       onUpdate: () => { setDisplayCredits(Math.round(obj.val)); } });
+
+    return () => {
+      creditTweenRef.current?.kill();
+    };
   }, [credits, displayCredits]);
 
   // Sync muted state with AudioEngine
@@ -160,17 +190,19 @@ export default function PlayableSlotSection() {
     } catch {
       // localStorage unavailable
     }
-    const activeBet = isFreeSpinMode ? 0 : bet;
+    const freeSpinMode = isFreeSpinModeRef.current;
+    const currentFreeSpins = freeSpinsRef.current;
+    const activeBet = freeSpinMode ? 0 : bet;
 
-    if (!isFreeSpinMode && currentCredits < bet) {
+    if (!freeSpinMode && currentCredits < bet) {
       setMessage('INSUFFICIENT FUNDS'); setIsAutoSpin(false); return;
     }
 
     setIsSpinning(true);
     setWinningLines([]);
-    if (!isFreeSpinMode) setCredits(p => p - bet);
+    if (!freeSpinMode) setCredits(p => p - bet);
     setLastWin(0);
-    setMessage(isFreeSpinMode ? `FREE SPIN! (${freeSpins} left)` : 'SPINNING...');
+    setMessage(freeSpinMode ? `FREE SPIN! (${currentFreeSpins} left)` : 'SPINNING...');
     AudioEngine.spinStart();
 
     reelsRef.current.forEach((reel) => {
@@ -181,7 +213,7 @@ export default function PlayableSlotSection() {
     const newGrid = getInitialGrid();
 
     [0, 1, 2].forEach((col) => {
-      timeoutsRef.current.push(setTimeout(() => {
+      scheduleTimeout(() => {
         const reel = reelsRef.current[col];
         if (reel) { gsap.killTweensOf(reel); gsap.fromTo(reel, { y: '-10%' }, { y: '0%', duration: 0.3, ease: 'bounce.out' }); }
         AudioEngine.reelStop(col);
@@ -190,13 +222,15 @@ export default function PlayableSlotSection() {
           g[0][col] = newGrid[0][col]; g[1][col] = newGrid[1][col]; g[2][col] = newGrid[2][col];
           return g;
         });
-      }, 1000 + col * 500));
+      }, 1000 + col * 500);
     });
 
-    timeoutsRef.current.push(setTimeout(() => {
+    scheduleTimeout(() => {
       let totalWin = 0;
       const matched: number[][][] = [];
       let crownCount = 0;
+      let freeSpinModeAfterResult = isFreeSpinModeRef.current;
+      let freeSpinsAfterResult = freeSpinsRef.current;
 
       // Count crowns for free spins trigger
       newGrid.flat().forEach(id => { if (id === 'crown') crownCount++; });
@@ -209,14 +243,23 @@ export default function PlayableSlotSection() {
         }
       });
 
-      if (isFreeSpinMode) {
-        const remaining = freeSpins - 1;
+      if (freeSpinModeAfterResult) {
+        const remaining = Math.max(0, freeSpinsAfterResult - 1);
+        freeSpinsAfterResult = remaining;
+        freeSpinsRef.current = remaining;
         setFreeSpins(remaining);
-        if (remaining <= 0) { setIsFreeSpinMode(false); setMessage('FREE SPINS DONE!'); }
+        if (remaining <= 0) {
+          freeSpinModeAfterResult = false;
+          isFreeSpinModeRef.current = false;
+          setIsFreeSpinMode(false);
+          setMessage('FREE SPINS DONE!');
+        }
       }
 
       // Trigger Free Spins if 3+ crowns
-      if (crownCount >= 3 && !isFreeSpinMode) {
+      if (crownCount >= 3 && !freeSpinModeAfterResult) {
+        freeSpinsRef.current = 10;
+        isFreeSpinModeRef.current = true;
         setFreeSpins(10); setIsFreeSpinMode(true);
         setMessage('🎉 10 FREE SPINS UNLOCKED!');
         fireConfetti();
@@ -225,17 +268,21 @@ export default function PlayableSlotSection() {
         setCredits(p => p + totalWin); setLastWin(totalWin); setWinningLines(matched);
         if (totalWin >= bet * 25) { setMessage(`💎 MEGA WIN! +${totalWin}`); fireConfetti(); AudioEngine.bigWin(); }
         else { setMessage(`🎉 WINNER! +${totalWin}`); AudioEngine.smallWin(); }
-      } else if (!isFreeSpinMode || freeSpins <= 1) {
+      } else if (!freeSpinModeAfterResult || freeSpinsAfterResult <= 0) {
         setMessage('PLACE YOUR BETS');
       }
 
       setIsSpinning(false);
 
-      if (autoSpinRef.current || (isFreeSpinMode && freeSpins > 1)) {
-        timeoutsRef.current.push(setTimeout(() => { if (autoSpinRef.current || isFreeSpinMode) performSpinRef.current(); }, 1500));
+      if (autoSpinRef.current || (isFreeSpinModeRef.current && freeSpinsRef.current > 0)) {
+        scheduleTimeout(() => {
+          if (autoSpinRef.current || (isFreeSpinModeRef.current && freeSpinsRef.current > 0)) {
+            performSpinRef.current();
+          }
+        }, 1500);
       }
-    }, 2600));
-  }, [bet, clearSpinTimeouts, fireConfetti, freeSpins, isFreeSpinMode]);
+    }, 2600);
+  }, [bet, clearSpinTimeouts, fireConfetti, scheduleTimeout]);
 
   useEffect(() => {
     performSpinRef.current = performSpin;
@@ -277,7 +324,7 @@ export default function PlayableSlotSection() {
   const isWin = winningLines.length > 0;
 
   return (
-    <section ref={sectionRef} id="play"
+    <section ref={sectionRef} id={sectionId}
       className="relative w-full min-h-screen bg-casino-ink py-[10vh] flex flex-col items-center justify-center overflow-hidden z-[90]">
 
       <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_50%_50%,_rgba(176,38,255,0.06)_0%,_transparent_60%)]" />
@@ -373,7 +420,7 @@ export default function PlayableSlotSection() {
           <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-6 px-4">
             <div className="flex gap-3 w-full md:w-auto flex-wrap">
               {/* Auto Spin */}
-              <button onClick={() => { setIsAutoSpin(p => { const n = !p; if (n && !isSpinning) setTimeout(performSpin, 100); return n; }); }}
+              <button onClick={() => { setIsAutoSpin(p => { const n = !p; if (n && !isSpinning) scheduleTimeout(performSpin, 100); return n; }); }}
                 aria-pressed={isAutoSpin}
                 aria-label={isAutoSpin ? 'Stop auto spin' : 'Start auto spin'}
                 className={`flex-1 md:flex-none px-6 py-4 rounded-xl font-mono text-sm tracking-widest transition-all cursor-pointer ${

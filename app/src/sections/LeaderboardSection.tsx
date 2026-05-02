@@ -23,8 +23,13 @@ const RECENT_WINS = [
   { name: 'Phantom_X',  amount: 2200, symbol: '🔔', time: '14m ago' },
 ];
 
-export default function LeaderboardSection() {
+interface LeaderboardSectionProps {
+  sectionId?: string;
+}
+
+export default function LeaderboardSection({ sectionId = 'jackpots' }: LeaderboardSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [highlightRank, setHighlightRank] = useState<number | null>(null);
 
   useEffect(() => {
@@ -52,9 +57,15 @@ export default function LeaderboardSection() {
     const section = sectionRef.current;
     if (!section) return;
 
-    let id: ReturnType<typeof setInterval>;
+    const stopInterval = () => {
+      if (intervalRef.current === null) return;
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
+
     const startInterval = () => {
-      id = setInterval(() => {
+      if (intervalRef.current !== null) return;
+      intervalRef.current = setInterval(() => {
         setHighlightRank(r => r === null ? 1 : r >= 7 ? null : r! + 1);
       }, 2000);
     };
@@ -64,7 +75,7 @@ export default function LeaderboardSection() {
         if (entry.isIntersecting) {
           startInterval();
         } else {
-          clearInterval(id);
+          stopInterval();
         }
       },
       { threshold: 0 }
@@ -72,13 +83,13 @@ export default function LeaderboardSection() {
     observer.observe(section);
 
     return () => {
-      clearInterval(id);
+      stopInterval();
       observer.disconnect();
     };
   }, []);
 
   return (
-    <section ref={sectionRef} id="jackpots"
+    <section ref={sectionRef} id={sectionId}
       className="relative w-full bg-casino-charcoal py-[10vh] overflow-hidden z-[91]">
 
       {/* Background glow */}
