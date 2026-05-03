@@ -68,7 +68,7 @@ test.describe('CyberSlots Layout Optimization & Cross-Device Tests', () => {
     await page.waitForTimeout(500);
     // Select different game (e.g. cascade for 5x5) - click the Play Now button in the arcade card
     const cascadeCard = page.locator('#games article:has-text("Cascade Nexus")');
-    await cascadeCard.getByRole('button', { name: /Play Now/i }).nth(1).click();
+    await cascadeCard.getByRole('button', { name: /Play Now/i }).first().click();
     await expect(page.getByText('5x5 cluster board')).toBeVisible();
     // Open paytable
     await page.getByRole('button', { name: 'Paytable', exact: true }).click();

@@ -18,6 +18,7 @@ export function SuperpowerList() {
     () => powers.find((power) => power.id === equippedPowerId),
     [equippedPowerId, powers],
   );
+  const spendableCredits = credits + (equippedPower?.price ?? 0);
 
   const handleSelect = useCallback((id: string, price: number) => {
     equipPower(id, price);
@@ -91,7 +92,7 @@ export function SuperpowerList() {
             <SuperpowerCard
               power={power}
               isActive={equippedPowerId === power.id}
-              canAfford={credits >= power.price}
+              canAfford={equippedPowerId === power.id || spendableCredits >= power.price}
               onSelect={handleSelect}
             />
           </div>

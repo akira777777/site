@@ -3,7 +3,7 @@ import { RedisService } from '../cache/redis.service';
 import { LeaderboardRepository } from './leaderboard.repository';
 import type { LeaderboardResponse, LeaderboardRow } from './leaderboard.types';
 
-const LEADERBOARD_CACHE_KEY = 'leaderboard:global:v1';
+const LEADERBOARD_CACHE_KEY_PREFIX = 'leaderboard:global:v1';
 
 @Injectable()
 export class LeaderboardService {
@@ -24,10 +24,11 @@ export class LeaderboardService {
 
   private async getCachedLeaders(limit: number): Promise<LeaderboardRow[]> {
     const redis = this.redisService.getClient();
+    const cacheKey = `${LEADERBOARD_CACHE_KEY_PREFIX}:${limit}`;
 
     if (redis) {
       try {
-        const cached = await redis.get(LEADERBOARD_CACHE_KEY);
+        const cached = await redis.get(cacheKey);
 
         if (cached) {
           return JSON.parse(cached) as LeaderboardRow[];
@@ -41,12 +42,7 @@ export class LeaderboardService {
 
     if (redis) {
       try {
-        await redis.set(
-          LEADERBOARD_CACHE_KEY,
-          JSON.stringify(leaders),
-          'EX',
-          60,
-        );
+        await redis.set(cacheKey, JSON.stringify(leaders), 'EX', 60);
       } catch {
         // Cache write failures must not fail the user request.
       }

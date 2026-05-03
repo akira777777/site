@@ -658,6 +658,7 @@ export default function Home() {
               </p>
             </div>
             <button
+              type="button"
               onClick={() => setReserveOpen(true)}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-casino-gold px-7 py-3 font-mono text-sm uppercase tracking-widest text-casino-ink transition hover:bg-casino-cyber focus:outline-none focus:ring-2 focus:ring-casino-gold"
             >

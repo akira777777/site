@@ -28,41 +28,64 @@ export class RedisService implements OnModuleDestroy {
 
   async incrementPoolWagered(amount: number): Promise<number> {
     if (!this.client) return 0;
-    const res = await this.client.incrbyfloat('pool:totalWagered', amount);
-    return parseFloat(res as any) || 0;
+    try {
+      const res = await this.client.incrbyfloat('pool:totalWagered', amount);
+      return parseFloat(String(res)) || 0;
+    } catch {
+      return 0;
+    }
   }
 
   async incrementPoolPaid(amount: number): Promise<number> {
     if (!this.client) return 0;
-    const res = await this.client.incrbyfloat('pool:totalPaid', amount);
-    return parseFloat(res as any) || 0;
+    try {
+      const res = await this.client.incrbyfloat('pool:totalPaid', amount);
+      return parseFloat(String(res)) || 0;
+    } catch {
+      return 0;
+    }
   }
 
   async getPoolStats(): Promise<{ totalWagered: number; totalPaid: number }> {
     if (!this.client) return { totalWagered: 0, totalPaid: 0 };
-    const [w, p] = await Promise.all([
-      this.client.get('pool:totalWagered'),
-      this.client.get('pool:totalPaid'),
-    ]);
-    return {
-      totalWagered: parseFloat(w || '0'),
-      totalPaid: parseFloat(p || '0'),
-    };
+    try {
+      const [w, p] = await Promise.all([
+        this.client.get('pool:totalWagered'),
+        this.client.get('pool:totalPaid'),
+      ]);
+      return {
+        totalWagered: parseFloat(w || '0'),
+        totalPaid: parseFloat(p || '0'),
+      };
+    } catch {
+      return { totalWagered: 0, totalPaid: 0 };
+    }
   }
 
-  async recordPlayerSpinResult(userId: string, isWin: boolean): Promise<number> {
+  async recordPlayerSpinResult(
+    userId: string,
+    isWin: boolean,
+  ): Promise<number> {
     const key = `player:${userId}:recentWins`;
     if (!this.client) return 0;
-    await this.client.lpush(key, isWin ? '1' : '0');
-    await this.client.ltrim(key, 0, 9);
-    const list = await this.client.lrange(key, 0, -1);
-    return list.filter((v) => v === '1').length;
+    try {
+      await this.client.lpush(key, isWin ? '1' : '0');
+      await this.client.ltrim(key, 0, 9);
+      const list = await this.client.lrange(key, 0, -1);
+      return list.filter((v) => v === '1').length;
+    } catch {
+      return 0;
+    }
   }
 
   async getRecentWinCount(userId: string): Promise<number> {
     const key = `player:${userId}:recentWins`;
     if (!this.client) return 0;
-    const list = await this.client.lrange(key, 0, -1);
-    return list.filter((v) => v === '1').length;
+    try {
+      const list = await this.client.lrange(key, 0, -1);
+      return list.filter((v) => v === '1').length;
+    } catch {
+      return 0;
+    }
   }
 }

@@ -17,10 +17,11 @@ export default function FooterSection({ onReserve }: FooterSectionProps) {
             <p className="mt-5 max-w-sm text-sm leading-7 text-casino-muted">
               The ultimate high-stakes demo entertainment experience. Play responsibly, win spectacularly.
             </p>
-             <button
-               onClick={onReserve}
-               className="mt-5 inline-flex items-center gap-2 rounded-full bg-casino-ember px-4 py-2 font-mono text-xs uppercase tracking-widest text-casino-ivory transition hover:shadow-[0_0_20px_rgba(255,0,127,0.32)] sm:px-5 sm:py-3"
-             >
+              <button
+                type="button"
+                onClick={onReserve}
+                className="mt-5 inline-flex items-center gap-2 rounded-full bg-casino-ember px-4 py-2 font-mono text-xs uppercase tracking-widest text-casino-ivory transition hover:shadow-[0_0_20px_rgba(255,0,127,0.32)] sm:px-5 sm:py-3"
+              >
                <ShieldCheck className="h-4 w-4" />
               Join Now
             </button>

@@ -278,6 +278,18 @@ const createGrid = (game: SlotGameConfig) =>
     Array.from({ length: game.cols }, () => getRandomSymbol(game.symbols).id)
   );
 
+const isValidGrid = (value: unknown, game: SlotGameConfig): value is string[][] => {
+  const symbolIds = new Set(game.symbols.map((symbol) => symbol.id));
+
+  return Array.isArray(value)
+    && value.length === game.rows
+    && value.every((row) => (
+      Array.isArray(row)
+      && row.length === game.cols
+      && row.every((id) => typeof id === 'string' && symbolIds.has(id))
+    ));
+};
+
 const cellKey = (row: number, col: number) => `${row}-${col}`;
 
 const findSymbol = (game: SlotGameConfig, id: string) =>
@@ -535,6 +547,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   const autoSpinRef = useRef(false);
   const isSpinningRef = useRef(false);
   const timeoutsRef = useRef<number[]>([]);
+  const isMountedRef = useRef(true);
   const creditTweenRef = useRef<ReturnType<typeof gsap.to> | null>(null);
   const activeGameRef = useRef<SlotGameConfig>(initialGame);
   const bonusRef = useRef<BonusState>(initialBonus);
@@ -619,6 +632,10 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   useEffect(() => { isSpinningRef.current = isSpinning; }, [isSpinning]);
   useEffect(() => { creditsRef.current = credits; }, [credits]);
   useEffect(() => { AudioEngine.setMuted(muted); }, [muted]);
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -874,13 +891,16 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       let spinGrid: string[][];
       let serverNearMiss = false;
       try {
-        const res = await fetch('/api/games/slots/demo-spin', {
+        const res = await fetch('/api/v1/games/slots/demo-spin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ betAmount: bet, gameId: game.id }),
         });
+        if (!res.ok) {
+          throw new Error(`Demo spin failed with status ${res.status}`);
+        }
         const json = await res.json();
-        if (json.data?.grid) {
+        if (isValidGrid(json.data?.grid, game)) {
           spinGrid = json.data.grid;
           serverNearMiss = !!json.data.nearMiss;
         } else {
@@ -889,6 +909,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       } catch {
         spinGrid = createGrid(game);
       }
+      if (!isMountedRef.current) return;
       let result: SpinResult;
       if (game.id === 'neon') {
         result = evaluateNeon(game, spinGrid, bet, currentBonus);

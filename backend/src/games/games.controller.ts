@@ -25,11 +25,11 @@ export class GamesController {
   }
 
   @Post('slots/demo-spin')
-  async demoSpin(
-    @Body(new ZodValidationPipe(slotSpinSchema)) body: SlotSpinDto,
-  ): Promise<{ data: SlotOutcome }> {
+  demoSpin(@Body(new ZodValidationPipe(slotSpinSchema)) body: SlotSpinDto): {
+    data: SlotOutcome;
+  } {
     return {
-      data: await this.gamesService.generateDemoOutcome(body.gameId),
+      data: this.gamesService.generateDemoOutcome(body.gameId),
     };
   }
 }

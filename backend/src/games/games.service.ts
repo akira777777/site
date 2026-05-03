@@ -26,11 +26,26 @@ export class GamesService {
     const currentBalance = user.balance.toNumber();
     const recentWins = await this.redisService.getRecentWinCount(userId);
     const poolStats = await this.redisService.getPoolStats();
-    const poolRatio = poolStats.totalWagered > 0 ? poolStats.totalPaid / poolStats.totalWagered : 0.85;
+    const poolRatio =
+      poolStats.totalWagered > 0
+        ? poolStats.totalPaid / poolStats.totalWagered
+        : 0.85;
 
-    const balanceFactor = Math.max(0.85, Math.min(1.0, 1 - (currentBalance - initialBalance) / (initialBalance * 2)));
-    const poolFactor = Math.max(0.88, Math.min(1.0, 1 - (poolRatio - 0.85) * 0.8));
-    const winStreakFactor = Math.max(0.9, Math.min(1.0, 1 - (recentWins / 5) * 0.05));
+    const balanceFactor = Math.max(
+      0.85,
+      Math.min(
+        1.0,
+        1 - (currentBalance - initialBalance) / (initialBalance * 2),
+      ),
+    );
+    const poolFactor = Math.max(
+      0.88,
+      Math.min(1.0, 1 - (poolRatio - 0.85) * 0.8),
+    );
+    const winStreakFactor = Math.max(
+      0.9,
+      Math.min(1.0, 1 - (recentWins / 5) * 0.05),
+    );
     let effectiveRTP = 0.96 * balanceFactor * poolFactor * winStreakFactor;
     let beta = 0.95;
     if (currentBalance > initialBalance * 2 || recentWins >= 3) {
@@ -38,7 +53,11 @@ export class GamesService {
       effectiveRTP = Math.min(effectiveRTP, 0.88);
     }
 
-    const rngResult = this.rngService.generateReels(input.gameId, effectiveRTP, beta);
+    const rngResult = this.rngService.generateReels(
+      input.gameId,
+      effectiveRTP,
+      beta,
+    );
     const outcome: SlotOutcome = {
       grid: rngResult.grid,
       seed: rngResult.seed,
@@ -55,7 +74,7 @@ export class GamesService {
     return result;
   }
 
-  async generateDemoOutcome(gameId: string = 'neon'): Promise<SlotOutcome> {
+  generateDemoOutcome(gameId: string = 'neon'): SlotOutcome {
     const rngResult = this.rngService.generateReels(gameId, 0.96, 0.95);
     return {
       grid: rngResult.grid,

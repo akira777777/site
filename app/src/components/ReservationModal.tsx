@@ -119,7 +119,7 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-casino-charcoal border border-casino-neon/30 text-casino-ivory sm:max-w-md shadow-[0_0_50px_rgba(0,243,255,0.15)]">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-casino-neon/30 bg-casino-charcoal p-4 text-casino-ivory shadow-[0_0_50px_rgba(0,243,255,0.15)] sm:max-w-md sm:p-6">
         <DialogHeader>
           <DialogTitle className="font-serif text-3xl text-casino-ivory uppercase tracking-tight [text-shadow:0_0_15px_rgba(0,243,255,0.5)]">
             Join Cyber Slots

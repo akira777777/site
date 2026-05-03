@@ -77,18 +77,28 @@ export class RngService {
   private readonly NEAR_MISS_RATE = 1200;
   private readonly BASE_RTP = 0.96;
 
-  generateReels(gameId: string, effectiveRTP = 0.96, beta = 0.95): { grid: string[][]; seed: string; nearMiss: boolean; multiplier: number } {
+  generateReels(
+    gameId: string,
+    effectiveRTP = 0.96,
+    beta = 0.95,
+  ): { grid: string[][]; seed: string; nearMiss: boolean; multiplier: number } {
     const cfg = GAME_CONFIGS[gameId] || GAME_CONFIGS.neon;
-    const scale = Math.max(0.7, Math.min(1.1, effectiveRTP / cfg.theoreticalRTP));
+    const scale = Math.max(
+      0.7,
+      Math.min(1.1, effectiveRTP / cfg.theoreticalRTP),
+    );
     const symbols = cfg.symbols.map((s) => ({
       ...s,
-      weight: Math.max(1, Math.floor(s.weight * (s.payout > 8 ? beta * scale : scale))),
+      weight: Math.max(
+        1,
+        Math.floor(s.weight * (s.payout > 8 ? beta * scale : scale)),
+      ),
     }));
     const grid: string[][] = Array.from({ length: cfg.rows }, () =>
       Array.from({ length: cfg.cols }, () => this.sampleSymbol(symbols).id),
     );
     const seed = randomBytes(16).toString('hex');
-    let nearMiss = randomInt(0, 10000) < this.NEAR_MISS_RATE;
+    const nearMiss = randomInt(0, 10000) < this.NEAR_MISS_RATE;
     if (nearMiss) {
       this.applyNearMissBias(grid, symbols, cfg);
     }
@@ -118,8 +128,14 @@ export class RngService {
     return symbols[0];
   }
 
-  private applyNearMissBias(grid: string[][], symbols: RngSymbol[], cfg: GameRngConfig) {
-    const highPayoutIds = symbols.filter((s) => s.payout >= 25).map((s) => s.id);
+  private applyNearMissBias(
+    grid: string[][],
+    symbols: RngSymbol[],
+    cfg: GameRngConfig,
+  ) {
+    const highPayoutIds = symbols
+      .filter((s) => s.payout >= 25)
+      .map((s) => s.id);
     if (highPayoutIds.length === 0 || cfg.cols < 3) return;
     const target = highPayoutIds[randomInt(0, highPayoutIds.length)];
     const row = randomInt(0, cfg.rows);
@@ -136,15 +152,21 @@ export class RngService {
       }
     }
     if (symbols.some((s) => s.role === 'cash' || s.role === 'lock')) {
-      const cashIds = symbols.filter((s) => s.role === 'cash' || s.role === 'lock').map((s) => s.id);
+      const cashIds = symbols
+        .filter((s) => s.role === 'cash' || s.role === 'lock')
+        .map((s) => s.id);
       if (cashIds.length > 0) {
         let lockCount = 0;
-        for (let r = 0; r < cfg.rows; r++) for (let c = 0; c < cfg.cols; c++) if (cashIds.includes(grid[r][c])) lockCount++;
+        for (let r = 0; r < cfg.rows; r++)
+          for (let c = 0; c < cfg.cols; c++)
+            if (cashIds.includes(grid[r][c])) lockCount++;
         if (lockCount >= 6) {
           for (let r = 0; r < cfg.rows && lockCount >= 6; r++) {
             for (let c = 0; c < cfg.cols && lockCount >= 6; c++) {
               if (cashIds.includes(grid[r][c]) && randomInt(0, 2) === 0) {
-                grid[r][c] = this.sampleSymbol(symbols.filter((s) => !cashIds.includes(s.id))).id;
+                grid[r][c] = this.sampleSymbol(
+                  symbols.filter((s) => !cashIds.includes(s.id)),
+                ).id;
                 lockCount--;
               }
             }
