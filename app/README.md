@@ -1,73 +1,26 @@
-# React + TypeScript + Vite
+# Cyber Slots
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite demo casino lobby with responsive landing sections, a playable slot cabinet, leaderboard, reservation modal, and cybernetic superpower upgrades.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `npm run dev` - start Vite on port 3000
+- `npm run build` - generate SEO files, typecheck, and build production assets
+- `npm run lint` - run ESLint
+- `npm run generate:seo` - regenerate `public/robots.txt`, `public/sitemap.xml`, and `public/_redirects`
+- `npm run optimize:images` - regenerate responsive image variants
+- `npm run preview` - preview the production build
 
-## React Compiler
+## Architecture
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `src/pages` contains route-level pages loaded with React Router and `lazy`.
+- `src/sections` contains landing-page sections, including the playable slot cabinet.
+- `src/features/superpowers` contains the Suspense-first superpower store feature.
+- `src/components/ui` contains reusable Radix/shadcn-style primitives.
+- `scripts/build.mjs` runs SEO generation before TypeScript and Vite build.
 
-## Expanding the ESLint configuration
+## Notes
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- The legacy Convex sample app was removed from `casino/` to keep the production app focused.
+- Playwright artifacts and temporary TSX experiments are ignored by `.gitignore`.
+- Set `SITE_URL` or `VITE_SITE_URL` in production so generated sitemap and canonical metadata use the deployed URL.

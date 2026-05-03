@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cyber_slots
+      POSTGRES_PASSWORD: cyber_slots
+      POSTGRES_DB: cyber_slots
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyber_slots -d cyber_slots"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://cyber_slots:cyber_slots@postgres:5432/cyber_slots?schema=public
+      JWT_SECRET: replace-with-a-strong-secret
+      JWT_ACCESS_TOKEN_TTL: 15m
+      JWT_REFRESH_TOKEN_TTL_DAYS: 7
+      REDIS_URL: redis://redis:6379
+      FRONTEND_ORIGINS: http://localhost:3000
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    command: sh -c "npx prisma migrate deploy && node dist/main.js"
+
+volumes:
+  postgres-data:

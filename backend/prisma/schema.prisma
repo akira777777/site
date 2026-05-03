@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PLAYER
+  ADMIN
+}
+
+enum BetGameType {
+  SLOTS
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  WIN
+  REFUND
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  username            String               @unique
+  email               String               @unique
+  passwordHash        String
+  balance             Decimal              @default(1000.00) @db.Decimal(14, 2)
+  roles               Role[]               @default([PLAYER])
+  version             Int                  @default(1)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  bets                Bet[]
+  gameSessions        GameSession[]
+  leaderboardEntry    LeaderboardEntry?
+  reservations        Reservation[]
+  superpowerProgress  SuperpowerProgress[]
+  transactions        Transaction[]
+  refreshTokens       RefreshToken[]
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model Bet {
+  id         String      @id @default(cuid())
+  userId     String
+  gameType   BetGameType @default(SLOTS)
+  amount     Decimal     @db.Decimal(14, 2)
+  multiplier Decimal     @db.Decimal(8, 2)
+  winAmount  Decimal     @db.Decimal(14, 2)
+  seed       String
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, gameType, createdAt])
+}
+
+model GameSession {
+  id        String    @id @default(cuid())
+  userId    String
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  totalBets Decimal   @default(0.00) @db.Decimal(14, 2)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startTime])
+}
+
+model LeaderboardEntry {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  score     Int      @default(0)
+  rank      Int?
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([score])
+}
+
+model SuperpowerProgress {
+  id           String   @id @default(cuid())
+  userId       String
+  superpowerId String
+  level        Int      @default(1)
+  points       Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, superpowerId])
+  @@index([userId])
+}
+
+model Reservation {
+  id        String            @id @default(cuid())
+  userId    String?
+  email     String
+  bonusType String
+  status    ReservationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  user      User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, createdAt])
+  @@index([status, createdAt])
+}
+
+model Transaction {
+  id        String          @id @default(cuid())
+  userId    String
+  type      TransactionType
+  amount    Decimal         @db.Decimal(14, 2)
+  reference String
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([reference])
+}

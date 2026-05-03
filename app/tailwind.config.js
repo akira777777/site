@@ -2,6 +2,16 @@
 export default {
   darkMode: ["class"],
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  safelist: [
+    'from-[#B026FF]',
+    'to-[#FF007F]',
+    'from-[#00FFCC]',
+    'to-[#0088FF]',
+    'from-[#FFD700]',
+    'to-[#FF5500]',
+    'from-[#00FF00]',
+    'to-[#005500]',
+  ],
   theme: {
     extend: {
       colors: {

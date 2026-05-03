@@ -3,7 +3,10 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const fallbackSiteUrl = 'http://localhost:3000';
-const routes = ['/', '/superpowers'];
+const routes = [
+  { path: '/', image: '/images/slot_hero.png', priority: '1.0' },
+  { path: '/superpowers', image: '/images/slot_neon.png', priority: '0.8' },
+];
 
 export function getSiteUrl() {
   const rawSiteUrl = process.env.SITE_URL || process.env.VITE_SITE_URL;
@@ -29,14 +32,27 @@ function routeUrl(siteUrl, route) {
   return `${siteUrl}${route === '/' ? '/' : route}`;
 }
 
+function sitemapEntry(siteUrl, route) {
+  const loc = routeUrl(siteUrl, route.path);
+  return [
+    '  <url>',
+    `    <loc>${loc}</loc>`,
+    `    <priority>${route.priority}</priority>`,
+    '    <image:image>',
+    `      <image:loc>${siteUrl}${route.image}</image:loc>`,
+    '    </image:image>',
+    '  </url>',
+  ].join('\n');
+}
+
 export async function generateSeoFiles(siteUrl = getSiteUrl()) {
   const publicDir = path.join(process.cwd(), 'public');
   const sitemapUrl = `${siteUrl}/sitemap.xml`;
   const robotsTxt = [`User-agent: *`, `Allow: /`, `Sitemap: ${sitemapUrl}`, ``].join('\n');
   const sitemapXml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...routes.map((route) => `  <url><loc>${routeUrl(siteUrl, route)}</loc></url>`),
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+    ...routes.map((route) => sitemapEntry(siteUrl, route)),
     '</urlset>',
     '',
   ].join('\n');

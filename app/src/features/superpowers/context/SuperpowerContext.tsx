@@ -28,12 +28,15 @@ export const SuperpowerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     setCredits((currentCredits) => {
-      if (currentCredits < price) {
+      const equippedPower = SUPERPOWERS.find((power) => power.id === equippedPowerId);
+      const availableCredits = currentCredits + (equippedPower?.price ?? 0);
+
+      if (availableCredits < price) {
         return currentCredits;
       }
 
       setEquippedPowerId(id);
-      return currentCredits - price;
+      return availableCredits - price;
     });
   }, [equippedPowerId]);
 
