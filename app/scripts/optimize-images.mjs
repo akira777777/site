@@ -6,7 +6,8 @@ const rootDir = process.cwd();
 const imageDir = path.join(rootDir, 'public', 'images');
 const outputDir = path.join(imageDir, 'generated');
 const widths = [480, 768, 1024];
-const quality = 82;
+const webpQuality = 82;
+const avifQuality = 58;
 
 await mkdir(outputDir, { recursive: true });
 
@@ -25,10 +26,19 @@ for (const file of pngFiles) {
     const outputPath = path.join(outputDir, `${name}-${width}.webp`);
     await sharp(inputPath)
       .resize({ width, withoutEnlargement: true })
-      .webp({ quality })
+      .webp({ quality: webpQuality })
       .toFile(outputPath);
 
     const outputStats = await stat(outputPath);
     console.log(`${path.relative(rootDir, outputPath)} ${(outputStats.size / 1024).toFixed(1)} KB`);
+
+    const avifOutputPath = path.join(outputDir, `${name}-${width}.avif`);
+    await sharp(inputPath)
+      .resize({ width, withoutEnlargement: true })
+      .avif({ quality: avifQuality, effort: 5 })
+      .toFile(avifOutputPath);
+
+    const avifOutputStats = await stat(avifOutputPath);
+    console.log(`${path.relative(rootDir, avifOutputPath)} ${(avifOutputStats.size / 1024).toFixed(1)} KB`);
   }
 }

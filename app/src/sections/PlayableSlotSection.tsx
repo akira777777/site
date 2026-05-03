@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import confetti from 'canvas-confetti';
 import {
   BadgePlus,
   Bell,
@@ -27,6 +26,7 @@ import { AudioEngine } from '../utils/audioEngine';
 gsap.registerPlugin(ScrollTrigger);
 
 type SlotGameId = 'neon' | 'cascade' | 'vault' | 'egypt';
+type HoldGameId = 'vault' | 'egypt';
 
 interface SlotSymbol {
   id: string;
@@ -61,7 +61,12 @@ interface BonusState {
   multiplierPasses: number;
   streak: number;
   activeBoost: number;
-  vaultRespins: number;
+  holdRespinsByGame: Record<HoldGameId, number>;
+}
+
+interface StoredBonusState extends Partial<Omit<BonusState, 'holdRespinsByGame'>> {
+  holdRespinsByGame?: Partial<Record<HoldGameId, number>>;
+  vaultRespins?: number;
 }
 
 interface SpinResult {
@@ -75,7 +80,7 @@ interface SpinResult {
   freeSpinAward?: number;
   creditAward?: number;
   lockedCells?: string[];
-  vaultRespins?: number;
+  holdRespins?: number;
   settledGrid?: string[][];
   vaultFilled?: boolean;
 }
@@ -195,13 +200,20 @@ const FAKE_WINNERS = [
   { name: 'NileAce', amount: 12400, symbol: 'Scarab', game: 'Egypt Fire Demo' },
 ];
 
-const DEFAULT_BONUS_STATE: BonusState = {
+const createDefaultBonusState = (): BonusState => ({
   mystery: 0,
   freeSpinTickets: 0,
   multiplierPasses: 0,
   streak: 0,
   activeBoost: 1,
-  vaultRespins: 0,
+  holdRespinsByGame: { vault: 0, egypt: 0 },
+});
+
+const createEmptyHoldLocks = (): Record<HoldGameId, string[]> => ({ vault: [], egypt: [] });
+
+const clampStoredCount = (value: unknown, fallback = 0) => {
+  const parsed = typeof value === 'number' ? value : parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : fallback;
 };
 
 const getStoredCredits = () => {
@@ -217,11 +229,24 @@ const getStoredCredits = () => {
 const getStoredBonusState = (): BonusState => {
   try {
     const saved = localStorage.getItem('casino_bonus_state');
-    if (!saved) return DEFAULT_BONUS_STATE;
-    const parsed = JSON.parse(saved) as Partial<BonusState>;
-    return { ...DEFAULT_BONUS_STATE, ...parsed };
+    if (!saved) return createDefaultBonusState();
+
+    const parsed = JSON.parse(saved) as StoredBonusState;
+    const holdRespinsByGame = {
+      vault: clampStoredCount(parsed.holdRespinsByGame?.vault ?? parsed.vaultRespins),
+      egypt: clampStoredCount(parsed.holdRespinsByGame?.egypt),
+    };
+
+    return {
+      mystery: clampStoredCount(parsed.mystery),
+      freeSpinTickets: clampStoredCount(parsed.freeSpinTickets),
+      multiplierPasses: clampStoredCount(parsed.multiplierPasses),
+      streak: clampStoredCount(parsed.streak),
+      activeBoost: clampStoredCount(parsed.activeBoost, 1) || 1,
+      holdRespinsByGame,
+    };
   } catch {
-    return DEFAULT_BONUS_STATE;
+    return createDefaultBonusState();
   }
 };
 
@@ -257,7 +282,7 @@ const cellKey = (row: number, col: number) => `${row}-${col}`;
 const findSymbol = (game: SlotGameConfig, id: string) =>
   game.symbols.find((symbol) => symbol.id === id) || game.symbols[0];
 
-const isHoldAndWinGame = (gameId: SlotGameId) => gameId === 'vault' || gameId === 'egypt';
+const isHoldAndWinGame = (gameId: SlotGameId): gameId is HoldGameId => gameId === 'vault' || gameId === 'egypt';
 
 const evaluateNeon = (game: SlotGameConfig, grid: string[][], bet: number, bonus: BonusState): SpinResult => {
   let win = 0;
@@ -405,7 +430,7 @@ const evaluateVault = (
     cascadeCount: 0,
     scatterCount: lockedCells.length,
     lockedCells,
-    vaultRespins: respins,
+    holdRespins: respins,
     vaultFilled,
     bonusTriggered: vaultFilled ? 'Mega jackpot vault filled' : newLocks > 0 ? 'New cash locked. Respins reset.' : undefined,
     message: vaultFilled ? `Vault filled: +${cashWin + megaWin}` : newLocks > 0 ? `${newLocks} vault symbols locked` : 'Vault respin missed',
@@ -479,7 +504,7 @@ const evaluateEgypt = (
     cascadeCount: 0,
     scatterCount: templeCount,
     lockedCells,
-    vaultRespins: respins,
+    holdRespins: respins,
     vaultFilled: boardFilled,
     freeSpinAward: templeCount >= 3 ? 5 : 0,
     bonusTriggered: boardFilled
@@ -501,6 +526,8 @@ const evaluateEgypt = (
 
 export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlotSectionProps) {
   const [initialGame] = useState<SlotGameConfig>(getStoredActiveGame);
+  const [initialBonus] = useState<BonusState>(getStoredBonusState);
+  const [initialCredits] = useState(getStoredCredits);
   const sectionRef = useRef<HTMLElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const tickerRef = useRef<HTMLDivElement>(null);
@@ -509,8 +536,11 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   const timeoutsRef = useRef<number[]>([]);
   const creditTweenRef = useRef<ReturnType<typeof gsap.to> | null>(null);
   const activeGameRef = useRef<SlotGameConfig>(initialGame);
-  const bonusRef = useRef<BonusState>(getStoredBonusState());
-  const creditsRef = useRef(getStoredCredits());
+  const bonusRef = useRef<BonusState>(initialBonus);
+  const creditsRef = useRef(initialCredits);
+  const displayCreditsRef = useRef(initialCredits);
+  const holdLockedCellsRef = useRef<Record<HoldGameId, string[]>>(createEmptyHoldLocks());
+  const autoSpinTimeoutRef = useRef<number | null>(null);
   const performSpinRef = useRef(() => {});
 
   const [activeGameId, setActiveGameId] = useState<SlotGameId>(initialGame.id);
@@ -518,25 +548,40 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
     () => SLOT_GAMES.find((game) => game.id === activeGameId) || SLOT_GAMES[0],
     [activeGameId]
   );
+  const activeSymbolMap = useMemo(
+    () => new Map(activeGame.symbols.map((symbol) => [symbol.id, symbol])),
+    [activeGame]
+  );
   const [grid, setGrid] = useState(() => createGrid(initialGame));
   const [matchedCells, setMatchedCells] = useState<string[]>([]);
-  const [vaultLockedCells, setVaultLockedCells] = useState<string[]>([]);
-  const [bonusState, setBonusState] = useState<BonusState>(getStoredBonusState);
+  const matchedCellSet = useMemo(() => new Set(matchedCells), [matchedCells]);
+  const [bonusState, setBonusState] = useState<BonusState>(initialBonus);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isAutoSpin, setIsAutoSpin] = useState(false);
-  const [credits, setCredits] = useState(getStoredCredits);
-  const [displayCredits, setDisplayCredits] = useState(getStoredCredits);
+  const [credits, setCredits] = useState(initialCredits);
+  const [displayCredits, setDisplayCredits] = useState(initialCredits);
   const [bet, setBet] = useState(initialGame.betOptions[0]);
   const [lastWin, setLastWin] = useState(0);
   const [message, setMessage] = useState('CHOOSE A SLOT AND SPIN');
   const [muted, setMuted] = useState(false);
   const [showPaytable, setShowPaytable] = useState(false);
   const [winnerIdx, setWinnerIdx] = useState(0);
+  const [sectionInView, setSectionInView] = useState(false);
 
   const clearSpinTimeouts = useCallback(() => {
     timeoutsRef.current.forEach((id) => clearTimeout(id));
     timeoutsRef.current = [];
+    if (autoSpinTimeoutRef.current !== null) {
+      clearTimeout(autoSpinTimeoutRef.current);
+      autoSpinTimeoutRef.current = null;
+    }
     if (boardRef.current) gsap.killTweensOf(boardRef.current);
+  }, []);
+
+  const clearAutoSpinTimeout = useCallback(() => {
+    if (autoSpinTimeoutRef.current === null) return;
+    clearTimeout(autoSpinTimeoutRef.current);
+    autoSpinTimeoutRef.current = null;
   }, []);
 
   const scheduleTimeout = useCallback((callback: () => void, delay: number) => {
@@ -548,9 +593,23 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
     return id;
   }, []);
 
+  const scheduleAutoSpin = useCallback((callback: () => void, delay: number) => {
+    clearAutoSpinTimeout();
+    const id = window.setTimeout(() => {
+      autoSpinTimeoutRef.current = null;
+      callback();
+    }, delay);
+    autoSpinTimeoutRef.current = id;
+    return id;
+  }, [clearAutoSpinTimeout]);
+
   const fireConfetti = useCallback((colors: string[]) => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    confetti({ particleCount: 70, spread: 65, origin: { y: 0.72 }, colors });
+    void import('canvas-confetti')
+      .then(({ default: confetti }) => {
+        confetti({ particleCount: 70, spread: 65, origin: { y: 0.72 }, colors });
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => { activeGameRef.current = activeGame; }, [activeGame]);
@@ -559,6 +618,19 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   useEffect(() => { isSpinningRef.current = isSpinning; }, [isSpinning]);
   useEffect(() => { creditsRef.current = credits; }, [credits]);
   useEffect(() => { AudioEngine.setMuted(muted); }, [muted]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setSectionInView(Boolean(entry?.isIntersecting)),
+      { rootMargin: '120px 0px', threshold: 0.04 }
+    );
+    observer.observe(section);
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -599,28 +671,42 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   }, [bonusState]);
 
   useEffect(() => {
-    if (displayCredits === credits) return;
-    const count = { value: displayCredits };
+    if (displayCreditsRef.current === credits) return;
+
     creditTweenRef.current?.kill();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      displayCreditsRef.current = credits;
+      const frameId = window.requestAnimationFrame(() => setDisplayCredits(credits));
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    const count = { value: displayCreditsRef.current };
     creditTweenRef.current = gsap.to(count, {
       value: credits,
-      duration: 1,
+      duration: 0.65,
       ease: 'power2.out',
-      onUpdate: () => setDisplayCredits(Math.round(count.value)),
+      onUpdate: () => {
+        const nextValue = Math.round(count.value);
+        displayCreditsRef.current = nextValue;
+        setDisplayCredits(nextValue);
+      },
     });
 
     return () => {
       creditTweenRef.current?.kill();
     };
-  }, [credits, displayCredits]);
+  }, [credits]);
 
   useEffect(() => {
+    if (!sectionInView) return;
+
     const id = setInterval(() => setWinnerIdx((index) => (index + 1) % FAKE_WINNERS.length), 3000);
     return () => clearInterval(id);
-  }, []);
+  }, [sectionInView]);
 
   useEffect(() => {
     if (!tickerRef.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     gsap.fromTo(tickerRef.current, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' });
   }, [winnerIdx]);
 
@@ -639,7 +725,6 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
     setShowPaytable(false);
     setMessage(`${nextGame.title.toUpperCase()} READY`);
     setBet((currentBet) => nextGame.betOptions.includes(currentBet) ? currentBet : nextGame.betOptions[0]);
-    if (!isHoldAndWinGame(nextGame.id)) setVaultLockedCells([]);
     try {
       localStorage.setItem('casino_active_slot', nextGame.id);
     } catch {
@@ -649,8 +734,12 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
 
   useEffect(() => {
     const refreshRewards = () => {
-      setCredits(getStoredCredits());
-      setBonusState(getStoredBonusState());
+      const nextCredits = getStoredCredits();
+      const nextBonusState = getStoredBonusState();
+      creditsRef.current = nextCredits;
+      bonusRef.current = nextBonusState;
+      setCredits(nextCredits);
+      setBonusState(nextBonusState);
       setMessage('WELCOME BONUS LOADED');
     };
     const handleSlotSelected = (event: Event) => {
@@ -678,11 +767,30 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
     });
   }, []);
 
+  const stopAutoSpin = useCallback(() => {
+    autoSpinRef.current = false;
+    setIsAutoSpin(false);
+    clearAutoSpinTimeout();
+  }, [clearAutoSpinTimeout]);
+
+  const startAutoSpin = useCallback(() => {
+    if (isSpinningRef.current || autoSpinRef.current) return;
+    autoSpinRef.current = true;
+    setIsAutoSpin(true);
+    scheduleAutoSpin(() => {
+      if (autoSpinRef.current) performSpinRef.current();
+    }, 100);
+  }, [scheduleAutoSpin]);
+
   const resetCredits = () => {
     if (isSpinning) return;
+    stopAutoSpin();
+    const nextBonusState = createDefaultBonusState();
+    creditsRef.current = 1000;
+    bonusRef.current = nextBonusState;
     setCredits(1000);
-    setBonusState(DEFAULT_BONUS_STATE);
-    setVaultLockedCells([]);
+    setBonusState(nextBonusState);
+    holdLockedCellsRef.current = createEmptyHoldLocks();
     setMessage('DEMO WALLET RESET');
   };
 
@@ -727,6 +835,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   }, []);
 
   const performSpin = useCallback(() => {
+    if (isSpinningRef.current) return;
     clearSpinTimeouts();
     const game = activeGameRef.current;
     const currentBonus = bonusRef.current;
@@ -735,23 +844,28 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
 
     if (!usesTicket && currentCredits < bet) {
       setMessage('INSUFFICIENT DEMO CREDITS');
-      setIsAutoSpin(false);
+      stopAutoSpin();
       return;
     }
 
+    isSpinningRef.current = true;
     setIsSpinning(true);
     setMatchedCells([]);
     setLastWin(0);
     setMessage(usesTicket ? `FREE TICKET SPIN (${currentBonus.freeSpinTickets} LEFT)` : `${game.title.toUpperCase()} SPINNING`);
-    if (!usesTicket) setCredits((value) => value - bet);
+    if (!usesTicket) {
+      const nextCredits = currentCredits - bet;
+      creditsRef.current = nextCredits;
+      setCredits(nextCredits);
+    }
     AudioEngine.spinStart();
 
     if (boardRef.current) {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       gsap.fromTo(
         boardRef.current,
-        { scale: 0.985, filter: 'brightness(1.8)' },
-        { scale: 1, filter: 'brightness(1)', duration: prefersReducedMotion ? 0 : 0.9, ease: 'elastic.out(1, 0.55)' }
+        { rotate: -0.15, scale: 0.985 },
+        { rotate: 0, scale: 1, duration: prefersReducedMotion ? 0 : 0.9, ease: 'elastic.out(1, 0.55)' }
       );
     }
 
@@ -763,11 +877,11 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       } else if (game.id === 'cascade') {
         result = evaluateCascade(game, spinGrid, bet);
       } else if (game.id === 'vault') {
-        result = evaluateVault(game, spinGrid, bet, vaultLockedCells, currentBonus.vaultRespins);
-        setVaultLockedCells(result.lockedCells || []);
+        result = evaluateVault(game, spinGrid, bet, holdLockedCellsRef.current.vault, currentBonus.holdRespinsByGame.vault);
+        holdLockedCellsRef.current = { ...holdLockedCellsRef.current, vault: result.lockedCells || [] };
       } else {
-        result = evaluateEgypt(game, spinGrid, bet, vaultLockedCells, currentBonus.vaultRespins);
-        setVaultLockedCells(result.lockedCells || []);
+        result = evaluateEgypt(game, spinGrid, bet, holdLockedCellsRef.current.egypt, currentBonus.holdRespinsByGame.egypt);
+        holdLockedCellsRef.current = { ...holdLockedCellsRef.current, egypt: result.lockedCells || [] };
       }
 
       const multiplier = currentBonus.multiplierPasses > 0 ? 2 : currentBonus.activeBoost;
@@ -784,7 +898,9 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         multiplierPasses: Math.max(0, mystery.state.multiplierPasses - (current.multiplierPasses > 0 ? 1 : 0)),
         streak: nextStreak,
         activeBoost: nextStreak >= 3 ? 2 : 1,
-        vaultRespins: isHoldAndWinGame(game.id) ? (result.vaultRespins || 0) : current.vaultRespins,
+        holdRespinsByGame: isHoldAndWinGame(game.id)
+          ? { ...current.holdRespinsByGame, [game.id]: result.holdRespins || 0 }
+          : current.holdRespinsByGame,
       }));
 
       setGrid(result.grid);
@@ -799,7 +915,11 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       }
 
       if (boostedWin + creditAward > 0) {
-        setCredits((value) => value + boostedWin + creditAward);
+        setCredits((value) => {
+          const nextCredits = value + boostedWin + creditAward;
+          creditsRef.current = nextCredits;
+          return nextCredits;
+        });
         AudioEngine.smallWin();
       }
       if (boostedWin >= bet * 20 || result.vaultFilled) {
@@ -814,15 +934,16 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       const bonusLabel = result.bonusTriggered ? ` · ${result.bonusTriggered}` : '';
       const mysteryLabel = mystery.message ? ` · ${mystery.message}` : '';
       setMessage(hasWin ? `${result.message}${boostLabel}${bonusLabel}${mysteryLabel}` : `${result.message}${bonusLabel}${mysteryLabel}`);
+      isSpinningRef.current = false;
       setIsSpinning(false);
 
       if (autoSpinRef.current) {
-        scheduleTimeout(() => {
+        scheduleAutoSpin(() => {
           if (autoSpinRef.current) performSpinRef.current();
         }, 1400);
       }
     }, 900);
-  }, [bet, clearSpinTimeouts, fireConfetti, resolveMysteryMeter, scheduleTimeout, updateBonusState, vaultLockedCells]);
+  }, [bet, clearSpinTimeouts, fireConfetti, resolveMysteryMeter, scheduleAutoSpin, scheduleTimeout, stopAutoSpin, updateBonusState]);
 
   useEffect(() => {
     performSpinRef.current = performSpin;
@@ -841,10 +962,10 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
   }, [isAutoSpin, isSpinning, performSpin, showPaytable]);
 
   const renderSymbol = (id: string, row: number, col: number) => {
-    const symbol = findSymbol(activeGame, id);
+    const symbol = activeSymbolMap.get(id) || activeGame.symbols[0];
     const Icon = symbol.icon;
     const key = cellKey(row, col);
-    const isMatched = matchedCells.includes(key);
+    const isMatched = matchedCellSet.has(key);
     const isMuted = matchedCells.length > 0 && !isMatched;
 
     return (
@@ -868,6 +989,9 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
 
   const liveWinner = FAKE_WINNERS[winnerIdx];
   const canSpin = bonusState.freeSpinTickets > 0 || credits >= bet;
+  const activeHoldRespins = isHoldAndWinGame(activeGame.id)
+    ? bonusState.holdRespinsByGame[activeGame.id]
+    : 0;
 
   return (
     <section
@@ -895,7 +1019,13 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
             Active Slots
           </h2>
           <div className="mt-4 inline-block rounded-full border border-casino-neon/30 bg-black/40 px-6 py-2 shadow-[0_0_20px_rgba(176,38,255,0.2)]">
-            <p className="font-mono text-base uppercase tracking-widest text-casino-neon md:text-xl">{message}</p>
+            <p
+              data-testid="slot-message"
+              aria-live="polite"
+              className="font-mono text-base uppercase tracking-widest text-casino-neon md:text-xl"
+            >
+              {message}
+            </p>
           </div>
         </div>
 
@@ -930,9 +1060,13 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
             { icon: Sparkles, label: 'Mystery Meter', value: `${Math.min(100, bonusState.mystery)}%` },
             { icon: BadgePlus, label: 'Free Tickets', value: bonusState.freeSpinTickets.toString() },
             { icon: Zap, label: 'Multiplier Pass', value: `${bonusState.multiplierPasses} left` },
-            { icon: Shield, label: isHoldAndWinGame(activeGame.id) ? 'Hold Respins' : 'Win Streak', value: isHoldAndWinGame(activeGame.id) ? bonusState.vaultRespins.toString() : `${bonusState.streak}x` },
+            { icon: Shield, label: isHoldAndWinGame(activeGame.id) ? 'Hold Respins' : 'Win Streak', value: isHoldAndWinGame(activeGame.id) ? activeHoldRespins.toString() : `${bonusState.streak}x` },
           ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-center gap-3 border border-white/8 bg-casino-ink/60 p-4">
+            <div
+              key={label}
+              data-testid={`bonus-stat-${label.toLowerCase().replace(/\s+/g, '-')}`}
+              className="flex items-center gap-3 border border-white/8 bg-casino-ink/60 p-4"
+            >
               <Icon className="h-5 w-5 text-casino-gold" />
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{label}</p>
@@ -970,7 +1104,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
 
           <div
             ref={boardRef}
-            className="relative mx-auto grid min-h-[300px] w-full max-w-[760px] gap-2 overflow-hidden rounded-3xl border-4 border-[#171717] bg-[#050505] p-4 shadow-[inset_0_0_50px_rgba(0,0,0,1)] md:gap-3 md:p-6"
+            className="relative mx-auto grid min-h-[300px] w-full max-w-[760px] transform-gpu gap-2 overflow-hidden rounded-3xl border-4 border-[#171717] bg-[#050505] p-4 shadow-[inset_0_0_50px_rgba(0,0,0,1)] will-change-transform md:gap-3 md:p-6"
             style={{ gridTemplateColumns: `repeat(${activeGame.cols}, minmax(0, 1fr))` }}
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-1/2 bg-gradient-to-b from-white/[0.04] to-transparent" />
@@ -989,11 +1123,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
           <div className="mt-8 flex flex-col items-stretch justify-between gap-4 lg:flex-row lg:items-center">
             <div className="grid grid-cols-3 gap-3">
               <button
-                onClick={() => setIsAutoSpin((value) => {
-                  const next = !value;
-                  if (next && !isSpinning) scheduleTimeout(performSpin, 100);
-                  return next;
-                })}
+                onClick={isAutoSpin ? stopAutoSpin : startAutoSpin}
                 aria-pressed={isAutoSpin}
                 className={`px-4 py-4 font-mono text-xs uppercase tracking-widest transition ${isAutoSpin ? 'bg-casino-neon/20 text-casino-neon' : 'bg-[#151515] text-casino-ivory/60 hover:text-casino-ivory'}`}
               >
@@ -1016,7 +1146,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
             </div>
 
             <button
-              onClick={isAutoSpin ? () => setIsAutoSpin(false) : performSpin}
+              onClick={isAutoSpin ? stopAutoSpin : performSpin}
               disabled={!isAutoSpin && (isSpinning || !canSpin)}
               className={`relative overflow-hidden px-12 py-5 font-serif text-3xl uppercase tracking-widest transition ${
                 !isAutoSpin && (isSpinning || !canSpin)

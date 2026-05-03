@@ -1,53 +1,20 @@
 import React from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
 
 /**
  * SuspenseLoader
  * 
  * Mandatory loader component for all Suspense boundaries.
- * Provides a consistent, themed loading experience.
+ * Provides a consistent loading experience without pulling UI libraries into
+ * the initial landing bundle.
  */
 export const SuspenseLoader: React.FC = () => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        width: '100%',
-        gap: 3,
-      }}
-    >
-      <CircularProgress 
-        size={60} 
-        thickness={2}
-        sx={{ 
-          color: '#B026FF', // casino-neon
-          filter: 'drop-shadow(0 0 10px rgba(176,38,255,0.4))'
-        }} 
-      />
-      <Typography 
-        variant="button" 
-        sx={{ 
-          fontFamily: 'monospace',
-          letterSpacing: '0.2em',
-          color: 'rgba(255,255,255,0.5)',
-          animation: 'pulse 2s infinite'
-        }}
-      >
+    <div className="flex min-h-[400px] w-full flex-col items-center justify-center gap-6 bg-casino-ink text-casino-ivory">
+      <div className="h-14 w-14 animate-spin rounded-full border-2 border-casino-neon/20 border-t-casino-neon [filter:drop-shadow(0_0_10px_rgba(176,38,255,0.4))]" />
+      <p className="animate-pulse font-mono text-xs uppercase tracking-[0.22em] text-casino-muted">
         Hacking Mainframe...
-      </Typography>
-      <style>
-        {`
-          @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-          }
-        `}
-      </style>
-    </Box>
+      </p>
+    </div>
   );
 };
 

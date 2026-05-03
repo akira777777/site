@@ -17,17 +17,24 @@ import {
   Zap,
 } from 'lucide-react';
 import Navigation from '../components/Navigation';
-import ReservationModal from '../components/ReservationModal';
 import FooterSection from '../sections/FooterSection';
 
-const PlayableSlotSection = lazy(() => import('../sections/PlayableSlotSection'));
-const LeaderboardSection = lazy(() => import('../sections/LeaderboardSection'));
+const loadPlayableSlotSection = () => import('../sections/PlayableSlotSection');
+const loadLeaderboardSection = () => import('../sections/LeaderboardSection');
+const PlayableSlotSection = lazy(loadPlayableSlotSection);
+const LeaderboardSection = lazy(loadLeaderboardSection);
+const ReservationModal = lazy(() => import('../components/ReservationModal'));
 
 const responsiveWidths = [480, 768, 1024];
 
 const webpSrcSet = (imageBase: string) =>
   responsiveWidths
     .map((width) => `/images/generated/${imageBase}-${width}.webp ${width}w`)
+    .join(', ');
+
+const avifSrcSet = (imageBase: string) =>
+  responsiveWidths
+    .map((width) => `/images/generated/${imageBase}-${width}.avif ${width}w`)
     .join(', ');
 
 const scrollBehavior = () =>
@@ -190,6 +197,7 @@ function ResponsiveImage({
 }: ResponsiveImageProps) {
   return (
     <picture className={pictureClassName}>
+      <source type="image/avif" srcSet={avifSrcSet(imageBase)} sizes={sizes} />
       <source type="image/webp" srcSet={webpSrcSet(imageBase)} sizes={sizes} />
       <img
         src={fallback}
@@ -293,11 +301,18 @@ export default function Home() {
   const selectedGame = featuredGames.find((game) => game.id === activePreview) || featuredGames[0];
 
   const scrollToPlay = () => {
+    void loadPlayableSlotSection();
     document.getElementById('play')?.scrollIntoView({ behavior: scrollBehavior() });
+  };
+
+  const scrollToJackpots = () => {
+    void loadLeaderboardSection();
+    document.getElementById('jackpots')?.scrollIntoView({ behavior: scrollBehavior() });
   };
 
   const selectFeaturedGame = (gameId: string) => {
     setActivePreview(gameId);
+    void loadPlayableSlotSection();
     try {
       localStorage.setItem('casino_active_slot', gameId);
     } catch {
@@ -309,7 +324,11 @@ export default function Home() {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-casino-ink text-casino-ivory">
       <Navigation onReserve={() => setReserveOpen(true)} />
-      <ReservationModal open={reserveOpen} onOpenChange={setReserveOpen} />
+      {reserveOpen && (
+        <Suspense fallback={null}>
+          <ReservationModal open={reserveOpen} onOpenChange={setReserveOpen} />
+        </Suspense>
+      )}
 
       <main>
         <section id="top" className="relative min-h-screen overflow-hidden">
@@ -349,7 +368,7 @@ export default function Home() {
                   <Play className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => document.getElementById('jackpots')?.scrollIntoView({ behavior: scrollBehavior() })}
+                  onClick={scrollToJackpots}
                   className="inline-flex items-center justify-center gap-2 font-mono text-sm text-casino-gold underline underline-offset-4 transition hover:text-casino-ivory focus:outline-none focus:ring-2 focus:ring-casino-gold"
                 >
                   View Jackpots
@@ -370,7 +389,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="games" className="relative bg-casino-ink px-[6vw] py-20">
+        <section id="games" className="relative bg-casino-ink px-[6vw] py-20 [contain-intrinsic-size:1000px] [content-visibility:auto]">
           <div className="mx-auto max-w-7xl">
             <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
               <div>
@@ -389,7 +408,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {arcadeCards.map((game, index) => {
+              {arcadeCards.map((game) => {
                 const isPlayable = featuredGames.some((item) => item.id === game.id);
                 const isActive = activePreview === game.id;
                 return (
@@ -422,7 +441,7 @@ export default function Home() {
                           sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw"
                           pictureClassName="block h-full w-full"
                           className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                          loading={index < 2 ? 'eager' : 'lazy'}
+                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(8,6,18,0.92)_0%,rgba(8,6,18,0.1)_62%)]" />
                         <div className="absolute left-4 top-4 rounded-full bg-casino-ember px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-casino-ivory">
@@ -495,7 +514,7 @@ export default function Home() {
           <PlayableSlotSection sectionId="play" />
         </LazyLandingSection>
 
-        <section id="live" className="relative overflow-hidden bg-[#0d0918] px-[6vw] py-20">
+        <section id="live" className="relative overflow-hidden bg-[#0d0918] px-[6vw] py-20 [contain-intrinsic-size:900px] [content-visibility:auto]">
           <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_75%_30%,rgba(176,38,255,0.13),transparent_34%)]" />
           <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <div>
@@ -556,7 +575,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="rewards" className="relative bg-casino-ink px-[6vw] py-20">
+        <section id="rewards" className="relative bg-casino-ink px-[6vw] py-20 [contain-intrinsic-size:760px] [content-visibility:auto]">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto mb-10 max-w-2xl text-center">
               <p className="font-mono text-xs uppercase tracking-widest text-casino-ember">Exclusive Offers</p>
@@ -588,7 +607,7 @@ export default function Home() {
           <LeaderboardSection sectionId="jackpots" />
         </LazyLandingSection>
 
-        <section id="vip" className="relative bg-[#0d0918] px-[6vw] py-20">
+        <section id="vip" className="relative bg-[#0d0918] px-[6vw] py-20 [contain-intrinsic-size:820px] [content-visibility:auto]">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto mb-10 max-w-2xl text-center">
               <p className="font-mono text-xs uppercase tracking-widest text-casino-gold">Loyalty Program</p>
@@ -624,7 +643,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="relative bg-casino-ink px-[6vw] py-20">
+        <section className="relative bg-casino-ink px-[6vw] py-20 [contain-intrinsic-size:360px] [content-visibility:auto]">
           <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 border border-casino-gold/25 bg-casino-charcoal/45 p-6 md:grid-cols-[1fr_auto] md:p-8">
             <div>
               <div className="mb-3 flex items-center gap-3 text-casino-gold">

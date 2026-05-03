@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Trophy, TrendingUp, Star } from 'lucide-react';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const LEADERBOARD = [
   { rank: 1, name: 'SpinMaster',   total: 99400, wins: 47, badge: '👑', color: '#ffd700' },
@@ -30,64 +26,31 @@ interface LeaderboardSectionProps {
 
 export default function LeaderboardSection({ sectionId = 'jackpots' }: LeaderboardSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [highlightRank, setHighlightRank] = useState<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    gsap.fromTo(section, { opacity: 0, y: 40 }, {
-      opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, ease: 'power2.out',
-      scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
-    });
-
-    // Stagger rows in
-    gsap.fromTo(section.querySelectorAll('.lb-row'), { x: -30, opacity: 0 }, {
-      x: 0, opacity: 1, duration: prefersReducedMotion ? 0 : 0.5, stagger: prefersReducedMotion ? 0 : 0.08, ease: 'power2.out',
-      scrollTrigger: { trigger: section, start: 'top 70%', toggleActions: 'play none none none' },
-    });
-
-    return () => { ScrollTrigger.getAll().forEach(st => { if (st.vars.trigger === section) st.kill(); }); };
-  }, []);
-
-  // Cycle highlight — pause when off-screen
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const stopInterval = () => {
-      if (intervalRef.current === null) return;
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    };
-
-    const startInterval = () => {
-      if (intervalRef.current !== null) return;
-      intervalRef.current = setInterval(() => {
-        setHighlightRank(r => r === null ? 1 : r >= 7 ? null : r! + 1);
-      }, 2000);
-    };
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          startInterval();
-        } else {
-          stopInterval();
-        }
-      },
-      { threshold: 0 }
+      ([entry]) => setIsVisible(Boolean(entry?.isIntersecting)),
+      { rootMargin: '80px 0px', threshold: 0.08 }
     );
     observer.observe(section);
 
-    return () => {
-      stopInterval();
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const intervalId = setInterval(() => {
+      setHighlightRank(r => r === null ? 1 : r >= 7 ? null : r + 1);
+    }, 2000);
+
+    return () => clearInterval(intervalId);
+  }, [isVisible]);
 
   return (
     <section ref={sectionRef} id={sectionId}
@@ -113,12 +76,15 @@ export default function LeaderboardSection({ sectionId = 'jackpots' }: Leaderboa
           
           {/* Leaderboard table */}
           <div className="lg:col-span-2 space-y-3">
-            {LEADERBOARD.map((player) => {
+            {LEADERBOARD.map((player, i) => {
               const isHighlighted = highlightRank === player.rank;
               const pct = (player.total / LEADERBOARD[0].total) * 100;
               return (
                 <div key={player.rank}
+                  style={{ transitionDelay: isVisible ? `${i * 65}ms` : '0ms' }}
                   className={`lb-row group relative flex items-center gap-4 p-4 rounded-2xl border transition-all duration-500 cursor-default ${
+                    isVisible ? 'translate-x-0 opacity-100' : '-translate-x-6 opacity-0'
+                  } ${
                     isHighlighted
                       ? 'bg-casino-neon/10 border-casino-neon/50 shadow-[0_0_20px_rgba(0,243,255,0.15)]'
                       : 'bg-white/[0.03] border-white/[0.05] hover:bg-white/[0.06] hover:border-white/10'
