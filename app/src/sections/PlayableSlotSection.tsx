@@ -973,16 +973,16 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         className={`flex h-full w-full items-center justify-center transition duration-300 ${isMatched ? 'scale-110' : ''} ${isMuted ? 'opacity-30 grayscale' : 'opacity-100'}`}
         aria-label={symbol.label}
       >
-        <Icon
-          className="h-9 w-9 md:h-11 md:w-11"
-          color={symbol.color}
-          strokeWidth={isMatched ? 2.7 : 1.7}
-          style={{
-            filter: isMatched
-              ? `drop-shadow(0 0 16px ${symbol.color}) drop-shadow(0 0 26px ${symbol.color})`
-              : `drop-shadow(0 0 7px ${symbol.color}85)`,
-          }}
-        />
+          <Icon
+            className="h-8 w-8 sm:h-9 md:h-11 md:w-11"
+            color={symbol.color}
+            strokeWidth={isMatched ? 2.7 : 1.7}
+            style={{
+              filter: isMatched
+                ? `drop-shadow(0 0 16px ${symbol.color}) drop-shadow(0 0 26px ${symbol.color})`
+                : `drop-shadow(0 0 7px ${symbol.color}85)`,
+            }}
+          />
       </div>
     );
   };
@@ -1104,7 +1104,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
 
           <div
             ref={boardRef}
-            className="relative mx-auto grid min-h-[300px] w-full max-w-[760px] transform-gpu gap-2 overflow-hidden rounded-3xl border-4 border-[#171717] bg-[#050505] p-4 shadow-[inset_0_0_50px_rgba(0,0,0,1)] will-change-transform md:gap-3 md:p-6"
+            className="relative mx-auto grid min-h-[260px] w-full max-w-[760px] transform-gpu gap-2 overflow-hidden rounded-3xl border-4 border-[#171717] bg-[#050505] p-4 shadow-[inset_0_0_50px_rgba(0,0,0,1)] will-change-transform sm:min-h-[300px] sm:gap-3 sm:p-5 md:gap-3 md:p-6"
             style={{ gridTemplateColumns: `repeat(${activeGame.cols}, minmax(0, 1fr))` }}
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-1/2 bg-gradient-to-b from-white/[0.04] to-transparent" />
