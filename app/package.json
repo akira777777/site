@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "node scripts/build.mjs",
+    "generate:seo": "node scripts/generate-seo.mjs",
     "lint": "eslint .",
     "optimize:images": "node scripts/optimize-images.mjs",
     "preview": "vite preview"

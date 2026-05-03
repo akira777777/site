@@ -1,218 +1,93 @@
-import React, { useCallback, useMemo } from 'react';
-import { Box, Typography, Button, Paper } from '@mui/material';
+import { useCallback, useMemo } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
+import { CheckCircle2, LockKeyhole, Sparkles } from 'lucide-react';
 import type { Superpower } from '../types';
 
 interface SuperpowerCardProps {
   power: Superpower;
   isActive: boolean;
+  canAfford: boolean;
   onSelect: (id: string, price: number) => void;
 }
 
-/**
- * SuperpowerCard
- * 
- * Individual card component for a superpower.
- * Uses MUI v7 with sx prop for styling.
- */
-export const SuperpowerCard: React.FC<SuperpowerCardProps> = ({ power, isActive, onSelect }) => {
-  
-  const handleSelect = useCallback(() => {
-    onSelect(power.id, power.price);
-  }, [power.id, power.price, onSelect]);
+export function SuperpowerCard({ power, isActive, canAfford, onSelect }: SuperpowerCardProps) {
+  const isUnavailable = !isActive && !canAfford;
 
-  const handleButtonClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSelect = useCallback(() => {
+    if (isUnavailable) return;
+    onSelect(power.id, power.price);
+  }, [isUnavailable, onSelect, power.id, power.price]);
+
+  const handleButtonClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     handleSelect();
   }, [handleSelect]);
 
-  const buttonText = useMemo(() => 
-    isActive ? 'System Equipped' : 'Initialize Protocol', 
-    [isActive]
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    handleSelect();
+  }, [handleSelect]);
+
+  const buttonText = useMemo(
+    () => (isActive ? 'Protocol Equipped' : canAfford ? 'Initialize Protocol' : 'Insufficient Credits'),
+    [canAfford, isActive],
   );
 
   return (
-    <Paper
+    <article
       onClick={handleSelect}
-      className="group"
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-        p: 4,
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        backgroundColor: 'rgba(10, 8, 20, 0.7)',
-        backdropFilter: 'blur(10px)',
-        borderColor: isActive ? 'primary.main' : 'rgba(255,255,255,0.05)',
-        borderWidth: isActive ? 2 : 1,
-        borderStyle: 'solid',
-        transform: isActive ? 'translateY(-8px) scale(1.02)' : 'translateY(0)',
-        boxShadow: isActive 
-          ? '0 0 40px rgba(176,38,255,0.2), inset 0 0 20px rgba(176,38,255,0.1)'
-          : '0 8px 32px rgba(0, 0, 0, 0.4)',
-        '&:hover': {
-          borderColor: isActive ? 'primary.main' : 'rgba(176,38,255,0.6)',
-          transform: isActive ? 'translateY(-8px) scale(1.02)' : 'translateY(-4px)',
-          boxShadow: isActive 
-            ? '0 0 50px rgba(176,38,255,0.3)'
-            : '0 12px 40px rgba(176,38,255,0.15), inset 0 0 10px rgba(176,38,255,0.05)',
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '2px',
-          background: isActive ? 'linear-gradient(90deg, transparent, #B026FF, transparent)' : 'transparent',
-          opacity: isActive ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-        }
-      }}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={isUnavailable ? -1 : 0}
+      aria-disabled={isUnavailable}
+      aria-pressed={isActive}
+      className={`group relative flex h-full flex-col overflow-hidden border bg-casino-charcoal/70 p-6 backdrop-blur transition duration-300 focus:outline-none focus:ring-2 focus:ring-casino-cyber md:p-7 ${
+        isActive
+          ? 'border-casino-cyber shadow-[0_0_42px_rgba(0,255,204,0.17)]'
+          : 'border-casino-ivory/10 hover:border-casino-neon/60 hover:shadow-[0_0_34px_rgba(176,38,255,0.14)]'
+      } ${isUnavailable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-1'}`}
     >
-      {/* Background Gradient Layer */}
-      <Box 
-        className={`bg-gradient-to-br ${power.color}`}
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          opacity: isActive ? 0.2 : 0,
-          transition: 'opacity 0.5s ease',
-          '&:hover': {
-            opacity: 0.1,
-          }
-        }}
-      />
-      
-      {/* Scanline Effect */}
-      <Box 
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.1) 50%)',
-          backgroundSize: '100% 4px',
-          opacity: 0.3,
-          pointerEvents: 'none',
-          zIndex: 0
-        }}
-      />
+      <div className={`absolute inset-0 bg-gradient-to-br ${power.color} opacity-0 transition group-hover:opacity-10 ${isActive ? 'opacity-20' : ''}`} />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.16)_50%)] bg-[length:100%_4px] opacity-25" />
 
-      <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-          <Box 
-            sx={{ 
-              fontSize: '2.5rem', 
-              width: 64,
-              height: 64,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '16px', 
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              border: '1px solid',
-              borderColor: isActive ? 'primary.main' : 'rgba(255,255,255,0.1)',
-              boxShadow: isActive ? '0 0 20px rgba(176,38,255,0.3)' : 'none',
-              transition: 'all 0.3s ease',
-              '.group:hover &': {
-                borderColor: 'primary.main',
-                transform: 'scale(1.1) rotate(5deg)'
-              }
-            }}
+      <div className="relative z-10 flex h-full flex-col">
+        <div className="mb-7 flex items-start justify-between gap-4">
+          <div className={`grid h-16 w-16 place-items-center border bg-black/55 text-4xl transition group-hover:rotate-3 group-hover:scale-105 ${
+            isActive ? 'border-casino-cyber shadow-[0_0_24px_rgba(0,255,204,0.22)]' : 'border-casino-ivory/10'
+          }`}
           >
-            {power.icon}
-          </Box>
-          <Box 
-            sx={{ 
-              fontFamily: '"Space Mono", monospace',
-              color: '#00FFCC',
-              fontWeight: 700,
-              fontSize: '1rem',
-              px: 2,
-              py: 0.5,
-              borderRadius: '4px',
-              backgroundColor: 'rgba(0, 255, 204, 0.05)',
-              border: '1px solid rgba(0, 255, 204, 0.3)',
-              textShadow: '0 0 10px rgba(0, 255, 204, 0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1
-            }}
-          >
-            <span style={{ fontSize: '0.8em' }}>CR</span> {power.price.toLocaleString()}
-          </Box>
-        </Box>
+            <span aria-hidden="true">{power.icon}</span>
+          </div>
+          <div className="inline-flex items-center gap-2 border border-casino-cyber/30 bg-casino-cyber/5 px-3 py-1 font-mono text-xs font-bold text-casino-cyber [text-shadow:0_0_10px_rgba(0,255,204,0.45)]">
+            <Sparkles className="h-3.5 w-3.5" />
+            {power.price.toLocaleString()} CR
+          </div>
+        </div>
 
-        <Typography 
-          variant="h3" 
-          sx={{ 
-            fontSize: '1.5rem', 
-            mb: 1.5, 
-            color: '#FFFFFF',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            textShadow: isActive ? '0 0 15px rgba(255,255,255,0.3)' : 'none'
-          }}
-        >
+        <h3 className="font-serif text-3xl uppercase leading-none text-casino-ivory transition group-hover:text-casino-gold">
           {power.title}
-        </Typography>
-
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            color: 'rgba(255, 255, 255, 0.7)', 
-            mb: 4, 
-            flexGrow: 1,
-            lineHeight: 1.7,
-            fontSize: '0.95rem',
-            fontFamily: 'Inter, sans-serif'
-          }}
-        >
+        </h3>
+        <p className="mt-4 flex-1 text-sm leading-6 text-casino-muted">
           {power.description}
-        </Typography>
+        </p>
 
-        <Button
-          fullWidth
-          variant={isActive ? "contained" : "outlined"}
-          color="primary"
+        <button
+          type="button"
           onClick={handleButtonClick}
-          sx={{
-            py: 1.5,
-            fontWeight: 800,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            borderRadius: '4px',
-            position: 'relative',
-            overflow: 'hidden',
-            backgroundColor: isActive ? 'primary.main' : 'transparent',
-            borderColor: isActive ? 'primary.main' : 'rgba(176,38,255,0.5)',
-            color: isActive ? '#FFFFFF' : 'primary.main',
-            boxShadow: isActive ? '0 0 20px rgba(176,38,255,0.5)' : 'none',
-            '&:hover': {
-              backgroundColor: isActive ? '#C04BFF' : 'rgba(176,38,255,0.1)',
-              borderColor: '#C04BFF',
-              boxShadow: '0 0 25px rgba(176,38,255,0.6)',
-            },
-            '&::after': isActive ? {
-              content: '""',
-              position: 'absolute',
-              top: '-50%',
-              left: '-50%',
-              width: '200%',
-              height: '200%',
-              background: 'linear-gradient(rgba(255,255,255,0.2), transparent)',
-              transform: 'rotate(45deg)',
-              pointerEvents: 'none',
-            } : {}
-          }}
+          disabled={isUnavailable}
+          className={`mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full border px-5 py-3 font-mono text-xs font-bold uppercase tracking-widest transition focus:outline-none focus:ring-2 focus:ring-casino-cyber disabled:cursor-not-allowed disabled:border-casino-ivory/10 disabled:text-casino-muted ${
+            isActive
+              ? 'border-casino-cyber bg-casino-cyber text-casino-ink shadow-[0_0_24px_rgba(0,255,204,0.35)]'
+              : 'border-casino-neon/60 text-casino-neon hover:bg-casino-neon hover:text-casino-ivory'
+          }`}
         >
+          {isUnavailable ? <LockKeyhole className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
           {buttonText}
-        </Button>
-      </Box>
-    </Paper>
+        </button>
+      </div>
+    </article>
   );
-};
+}
 
 export default SuperpowerCard;
