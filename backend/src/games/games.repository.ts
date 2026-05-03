@@ -6,11 +6,15 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from '../cache/redis.service';
 import type { SlotOutcome, SlotSpinResult } from './games.types';
 
 @Injectable()
 export class GamesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
+  ) {}
 
   async settleSlotSpin(params: {
     userId: string;
@@ -24,6 +28,7 @@ export class GamesRepository {
           id: true,
           balance: true,
           version: true,
+          initialBalance: true,
         },
       });
 
@@ -37,7 +42,7 @@ export class GamesRepository {
         throw new BadRequestException('Insufficient balance');
       }
 
-      const multiplier = new Prisma.Decimal(params.outcome.multiplier);
+      const multiplier = new Prisma.Decimal(params.outcome.multiplier || 0);
       const winAmount = betAmount.mul(multiplier);
       const nextBalance = user.balance.minus(betAmount).plus(winAmount);
       const updateResult = await tx.user.updateMany({
@@ -70,7 +75,9 @@ export class GamesRepository {
           winAmount,
           seed: params.outcome.seed,
           metadata: {
-            reels: params.outcome.reels,
+            grid: params.outcome.grid,
+            nearMiss: params.outcome.nearMiss,
+            effectiveRTP: params.outcome.effectiveRTP,
           },
         },
       });
@@ -108,14 +115,35 @@ export class GamesRepository {
         },
       });
 
+      await tx.rtpPool.upsert({
+        where: { id: 'global' },
+        create: {
+          id: 'global',
+          totalWagered: betAmount,
+          totalPaid: winAmount,
+        },
+        update: {
+          totalWagered: { increment: betAmount },
+          totalPaid: { increment: winAmount },
+        },
+      });
+
+      const isWin = winAmount.gt(0);
+      await this.redis.incrementPoolWagered(params.betAmount);
+      if (isWin) {
+        await this.redis.incrementPoolPaid(winAmount.toNumber());
+      }
+      await this.redis.recordPlayerSpinResult(params.userId, isWin);
+
       return {
         betId: bet.id,
         betAmount: betAmount.toFixed(2),
         winAmount: winAmount.toFixed(2),
         balance: nextBalance.toFixed(2),
-        reels: params.outcome.reels,
+        grid: params.outcome.grid,
         seed: params.outcome.seed,
-        multiplier: params.outcome.multiplier,
+        nearMiss: params.outcome.nearMiss,
+        multiplier: params.outcome.multiplier || 0,
       };
     });
   }

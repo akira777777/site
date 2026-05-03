@@ -1,7 +1,9 @@
 export interface SlotOutcome {
-  reels: string[];
+  grid: string[][];
   seed: string;
-  multiplier: number;
+  nearMiss: boolean;
+  multiplier?: number;
+  effectiveRTP?: number;
 }
 
 export interface SlotSpinResult extends SlotOutcome {

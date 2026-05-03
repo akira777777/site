@@ -34,6 +34,8 @@ model User {
   email               String               @unique
   passwordHash        String
   balance             Decimal              @default(1000.00) @db.Decimal(14, 2)
+  initialBalance      Decimal              @default(1000.00) @db.Decimal(14, 2)
+  currentRTPModifier  Decimal              @default(1.00) @db.Decimal(5, 2)
   roles               Role[]               @default([PLAYER])
   version             Int                  @default(1)
   createdAt           DateTime             @default(now())
@@ -140,4 +142,11 @@ model Transaction {
 
   @@index([userId, createdAt])
   @@index([reference])
+}
+
+model RtpPool {
+  id           String   @id @default("global")
+  totalWagered Decimal  @default(0) @db.Decimal(20, 2)
+  totalPaid    Decimal  @default(0) @db.Decimal(20, 2)
+  updatedAt    DateTime @updatedAt
 }

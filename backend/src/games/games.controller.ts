@@ -5,7 +5,7 @@ import type { AuthenticatedRequestUser } from '../auth/types/auth.types';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { slotSpinSchema, type SlotSpinDto } from './dto/slot-spin.schemas';
 import { GamesService } from './games.service';
-import type { SlotSpinResult } from './games.types';
+import type { SlotOutcome, SlotSpinResult } from './games.types';
 
 @Controller('games')
 export class GamesController {
@@ -21,6 +21,15 @@ export class GamesController {
 
     return {
       data: await this.gamesService.spinSlots(user.userId, body),
+    };
+  }
+
+  @Post('slots/demo-spin')
+  async demoSpin(
+    @Body(new ZodValidationPipe(slotSpinSchema)) body: SlotSpinDto,
+  ): Promise<{ data: SlotOutcome }> {
+    return {
+      data: await this.gamesService.generateDemoOutcome(body.gameId),
     };
   }
 }

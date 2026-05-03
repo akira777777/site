@@ -83,6 +83,7 @@ interface SpinResult {
   holdRespins?: number;
   settledGrid?: string[][];
   vaultFilled?: boolean;
+  nearMiss?: boolean;
 }
 
 interface PlayableSlotSectionProps {
@@ -869,8 +870,25 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       );
     }
 
-    scheduleTimeout(() => {
-      const spinGrid = createGrid(game);
+    scheduleTimeout(async () => {
+      let spinGrid: string[][];
+      let serverNearMiss = false;
+      try {
+        const res = await fetch('/api/games/slots/demo-spin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ betAmount: bet, gameId: game.id }),
+        });
+        const json = await res.json();
+        if (json.data?.grid) {
+          spinGrid = json.data.grid;
+          serverNearMiss = !!json.data.nearMiss;
+        } else {
+          spinGrid = createGrid(game);
+        }
+      } catch {
+        spinGrid = createGrid(game);
+      }
       let result: SpinResult;
       if (game.id === 'neon') {
         result = evaluateNeon(game, spinGrid, bet, currentBonus);
@@ -883,6 +901,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         result = evaluateEgypt(game, spinGrid, bet, holdLockedCellsRef.current.egypt, currentBonus.holdRespinsByGame.egypt);
         holdLockedCellsRef.current = { ...holdLockedCellsRef.current, egypt: result.lockedCells || [] };
       }
+      if (serverNearMiss) result.nearMiss = true;
 
       const multiplier = currentBonus.multiplierPasses > 0 ? 2 : currentBonus.activeBoost;
       const boostedWin = Math.round(result.win * multiplier);
@@ -906,6 +925,9 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
       setGrid(result.grid);
       setMatchedCells(result.matchedCells);
       setLastWin(boostedWin + creditAward);
+      if (result.nearMiss && boardRef.current) {
+        gsap.fromTo(boardRef.current, { boxShadow: '0 0 0 0 #ff0000' }, { boxShadow: '0 0 30px 10px #ff0000', duration: 0.6, yoyo: true, repeat: 1, ease: 'power2.inOut' });
+      }
 
       if (game.id === 'cascade' && result.settledGrid) {
         scheduleTimeout(() => {
