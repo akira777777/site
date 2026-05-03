@@ -92,12 +92,14 @@ export default function Navigation({ onReserve }: NavigationProps) {
 
         <div className="hidden items-center gap-3 lg:flex">
           <button
+            type="button"
             onClick={onReserve}
             className="font-mono text-xs uppercase tracking-widest text-casino-muted transition hover:text-casino-ivory"
           >
             Sign In
           </button>
           <button
+            type="button"
             onClick={onReserve}
             className="inline-flex items-center gap-2 rounded-full bg-casino-ember px-5 py-2.5 font-mono text-xs uppercase tracking-widest text-casino-ivory transition hover:scale-105 hover:shadow-[0_0_20px_rgba(255,0,127,0.36)]"
           >
@@ -106,6 +108,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
         </div>
 
         <button
+          type="button"
           className="text-casino-ivory lg:hidden"
           onClick={() => setMobileOpen((p) => !p)}
           aria-label="Toggle menu"
@@ -116,6 +119,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
       </div>
 
       <div
+        aria-hidden={!mobileOpen}
         className={`overflow-hidden border-t border-casino-ivory/10 bg-casino-ink/96 transition-all lg:hidden ${
           mobileOpen ? 'max-h-[28rem] opacity-100' : 'max-h-0 opacity-0'
         }`}
@@ -132,6 +136,7 @@ export default function Navigation({ onReserve }: NavigationProps) {
             </a>
           ))}
           <button
+            type="button"
             onClick={() => {
               setMobileOpen(false);
               onReserve();

@@ -86,8 +86,17 @@ test.describe('CyberSlots Layout Optimization & Cross-Device Tests', () => {
 
 
   test('Reservation modal is responsive and functional', async ({ page }) => {
-    // Click the Join Now button in the footer instead to avoid hero section overlap
-    await page.locator('footer').getByRole('button', { name: /Join Now/i }).click();
+    const menuButton = page.getByRole('button', { name: /Toggle menu/i });
+    const joinButtons = page.getByRole('button', { name: /Join Now/i });
+    const isCompactNav = (page.viewportSize()?.width ?? 0) < 1024;
+
+    if (isCompactNav) {
+      await menuButton.click();
+      await page.locator('nav').getByRole('button', { name: /Join Now/i }).click();
+    } else {
+      await joinButtons.first().click();
+    }
+
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible();
     await expect(page.getByLabel('Username')).toBeVisible();
