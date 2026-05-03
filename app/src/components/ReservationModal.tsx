@@ -140,66 +140,69 @@ export default function ReservationModal({ open, onOpenChange }: SignUpModalProp
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 mt-4" noValidate>
 
-            <div className="space-y-1.5">
-              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
-                <User className="w-3 h-3 text-casino-neon" /> Username
-              </Label>
-              <Input
-                required
-                minLength={3}
-                value={form.username}
-                onChange={(e) => update('username', e.target.value)}
-                onBlur={() => setTouched((p) => ({ ...p, username: true }))}
-                placeholder="cyber_spinner_99"
-                className={inputClass('username')}
-              />
-              {touched.username && errors.username && (
-                <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3 h-3" /> {errors.username}
-                </p>
-              )}
-            </div>
+             <div className="space-y-1.5">
+               <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1" htmlFor="username">
+                 <User className="w-3 h-3 text-casino-neon" /> Username
+               </Label>
+               <Input
+                 required
+                 minLength={3}
+                 value={form.username}
+                 onChange={(e) => update('username', e.target.value)}
+                 onBlur={() => setTouched((p) => ({ ...p, username: true }))}
+                 placeholder="cyber_spinner_99"
+                 className={inputClass('username')}
+                 id="username"
+               />
+               {touched.username && errors.username && (
+                 <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
+                   <AlertCircle className="w-3 h-3" /> {errors.username}
+                 </p>
+               )}
+             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
-                <Mail className="w-3 h-3 text-casino-neon" /> Email Address
-              </Label>
-              <Input
-                required
-                type="email"
-                value={form.email}
-                onChange={(e) => update('email', e.target.value)}
-                onBlur={() => setTouched((p) => ({ ...p, email: true }))}
-                placeholder="you@example.com"
-                className={inputClass('email')}
-              />
-              {touched.email && errors.email && (
-                <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3 h-3" /> {errors.email}
-                </p>
-              )}
-            </div>
+             <div className="space-y-1.5">
+               <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1" htmlFor="email">
+                 <Mail className="w-3 h-3 text-casino-neon" /> Email Address
+               </Label>
+               <Input
+                 required
+                 type="email"
+                 value={form.email}
+                 onChange={(e) => update('email', e.target.value)}
+                 onBlur={() => setTouched((p) => ({ ...p, email: true }))}
+                 placeholder="you@example.com"
+                 className={inputClass('email')}
+                 id="email"
+               />
+               {touched.email && errors.email && (
+                 <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
+                   <AlertCircle className="w-3 h-3" /> {errors.email}
+                 </p>
+               )}
+             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">
-                <Lock className="w-3 h-3 text-casino-neon" /> Password
-              </Label>
-              <Input
-                required
-                type="password"
-                minLength={6}
-                value={form.password}
-                onChange={(e) => update('password', e.target.value)}
-                onBlur={() => setTouched((p) => ({ ...p, password: true }))}
-                placeholder="••••••••"
-                className={inputClass('password')}
-              />
-              {touched.password && errors.password && (
-                <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3 h-3" /> {errors.password}
-                </p>
-              )}
-            </div>
+             <div className="space-y-1.5">
+               <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1" htmlFor="password">
+                 <Lock className="w-3 h-3 text-casino-neon" /> Password
+               </Label>
+               <Input
+                 required
+                 type="password"
+                 minLength={6}
+                 value={form.password}
+                 onChange={(e) => update('password', e.target.value)}
+                 onBlur={() => setTouched((p) => ({ ...p, password: true }))}
+                 placeholder="••••••••"
+                 className={inputClass('password')}
+                 id="password"
+               />
+               {touched.password && errors.password && (
+                 <p className="text-casino-ember text-xs font-mono flex items-center gap-1 mt-1">
+                   <AlertCircle className="w-3 h-3" /> {errors.password}
+                 </p>
+               )}
+             </div>
 
             <div className="space-y-1.5 pt-2">
               <Label className="text-casino-muted text-xs font-mono uppercase tracking-wide flex items-center gap-1">

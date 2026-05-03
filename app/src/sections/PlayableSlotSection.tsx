@@ -973,16 +973,16 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         className={`flex h-full w-full items-center justify-center transition duration-300 ${isMatched ? 'scale-110' : ''} ${isMuted ? 'opacity-30 grayscale' : 'opacity-100'}`}
         aria-label={symbol.label}
       >
-          <Icon
-            className="h-8 w-8 sm:h-9 md:h-11 md:w-11"
-            color={symbol.color}
-            strokeWidth={isMatched ? 2.7 : 1.7}
-            style={{
-              filter: isMatched
-                ? `drop-shadow(0 0 16px ${symbol.color}) drop-shadow(0 0 26px ${symbol.color})`
-                : `drop-shadow(0 0 7px ${symbol.color}85)`,
-            }}
-          />
+              <Icon
+                  className="h-6 w-6 sm:h-7 sm:w-7 md:h-9 md:w-9 lg:h-11 lg:w-11"
+                  color={symbol.color}
+                  strokeWidth={isMatched ? 2.7 : 1.7}
+                  style={{
+                    filter: isMatched
+                      ? `drop-shadow(0 0 16px ${symbol.color}) drop-shadow(0 0 26px ${symbol.color})`
+                      : `drop-shadow(0 0 7px ${symbol.color}85)`,
+                  }}
+                />
       </div>
     );
   };
@@ -1005,7 +1005,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
         <div className="flex w-full max-w-3xl items-center gap-3 rounded-full border border-casino-gold/30 bg-black/50 px-5 py-2">
           <Trophy className="h-4 w-4 shrink-0 text-casino-gold" />
           <span className="shrink-0 font-mono text-xs uppercase tracking-widest text-casino-muted">Live Win</span>
-          <div ref={tickerRef} className="truncate font-mono text-sm text-casino-gold">
+           <div ref={tickerRef} className="truncate font-mono text-sm sm:text-base text-casino-gold">
             <span className="font-bold text-casino-ivory">{liveWinner.name}</span>
             <span className="mx-2 text-casino-muted">hit</span>
             <span className="font-bold">{liveWinner.symbol} {liveWinner.amount.toLocaleString()}</span>
@@ -1013,17 +1013,17 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
           </div>
         </div>
 
-        <div className="text-center">
-          <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Cyber Arcade Lobby</p>
-          <h2 className="mt-3 font-serif text-5xl uppercase text-casino-ivory [text-shadow:0_0_30px_rgba(176,38,255,0.8)] md:text-7xl">
-            Active Slots
-          </h2>
+          <div className="text-center">
+            <p className="font-mono text-xs uppercase tracking-widest text-casino-cyber">Cyber Arcade Lobby</p>
+            <h2 className="mt-3 font-serif text-4xl uppercase text-casino-ivory [text-shadow:0_0_30px_rgba(176,38,255,0.8)] sm:text-5xl md:text-6xl lg:text-7xl">
+              Active Slots
+            </h2>
           <div className="mt-4 inline-block rounded-full border border-casino-neon/30 bg-black/40 px-6 py-2 shadow-[0_0_20px_rgba(176,38,255,0.2)]">
-            <p
-              data-testid="slot-message"
-              aria-live="polite"
-              className="font-mono text-base uppercase tracking-widest text-casino-neon md:text-xl"
-            >
+             <p
+               data-testid="slot-message"
+               aria-live="polite"
+               className="font-mono text-sm sm:text-base uppercase tracking-widest text-casino-neon md:text-xl"
+             >
               {message}
             </p>
           </div>
@@ -1033,23 +1033,23 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
           {SLOT_GAMES.map((game) => {
             const isActive = game.id === activeGame.id;
             return (
-              <button
-                key={game.id}
-                onClick={() => setActiveGameSafely(game.id)}
-                disabled={isSpinning}
-                className={`group min-h-[132px] border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                  isActive ? 'bg-white/[0.08] shadow-[0_0_28px_rgba(0,243,255,0.16)]' : 'bg-white/[0.025] hover:bg-white/[0.05]'
-                }`}
-                style={{ borderColor: isActive ? game.accent : 'rgba(255,255,255,0.12)' }}
-              >
+               <button
+                  key={game.id}
+                  onClick={() => setActiveGameSafely(game.id)}
+                  disabled={isSpinning}
+                  className={`group min-h-[120px] sm:min-h-[132px] border p-3 sm:p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                    isActive ? 'bg-white/[0.08] shadow-[0_0_28px_rgba(0,243,255,0.16)]' : 'bg-white/[0.025] hover:bg-white/[0.05]'
+                  }`}
+                  style={{ borderColor: isActive ? game.accent : 'rgba(255,255,255,0.12)' }}
+                >
                 <div className="mb-4 flex items-center justify-between gap-3">
-                  <span className="font-serif text-2xl uppercase text-casino-ivory">{game.title}</span>
+                   <span className="font-serif text-xl sm:text-2xl uppercase text-casino-ivory">{game.title}</span>
                   <span className="border px-2 py-1 font-mono text-[10px] uppercase tracking-widest" style={{ borderColor: `${game.accent}80`, color: game.accent }}>
                     {game.volatility}
                   </span>
                 </div>
-                <p className="text-sm leading-6 text-casino-muted">{game.subtitle}</p>
-                <p className="mt-3 font-mono text-[11px] uppercase tracking-widest" style={{ color: game.accent }}>{game.layout}</p>
+                  <p className="text-sm sm:text-base leading-6 text-casino-muted">{game.subtitle}</p>
+                  <p className="mt-3 font-mono text-xs sm:text-[11px] uppercase tracking-widest" style={{ color: game.accent }}>{game.layout}</p>
               </button>
             );
           })}
@@ -1062,15 +1062,15 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
             { icon: Zap, label: 'Multiplier Pass', value: `${bonusState.multiplierPasses} left` },
             { icon: Shield, label: isHoldAndWinGame(activeGame.id) ? 'Hold Respins' : 'Win Streak', value: isHoldAndWinGame(activeGame.id) ? activeHoldRespins.toString() : `${bonusState.streak}x` },
           ].map(({ icon: Icon, label, value }) => (
-            <div
-              key={label}
-              data-testid={`bonus-stat-${label.toLowerCase().replace(/\s+/g, '-')}`}
-              className="flex items-center gap-3 border border-white/8 bg-casino-ink/60 p-4"
-            >
-              <Icon className="h-5 w-5 text-casino-gold" />
+               <div
+               key={label}
+               data-testid={`bonus-stat-${label.toLowerCase().replace(/\s+/g, '-')}`}
+               className="flex items-center gap-2 border border-white/8 bg-casino-ink/60 p-3"
+             >
+               <Icon className="h-4 w-4 text-casino-gold" />
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">{label}</p>
-                <p className="mt-1 font-serif text-2xl text-casino-ivory">{value}</p>
+                 <p className="font-mono text-[9px] uppercase tracking-widest text-casino-muted">{label}</p>
+                 <p className="mt-0.5 font-serif text-lg sm:text-xl md:text-2xl text-casino-ivory">{value}</p>
               </div>
             </div>
           ))}
@@ -1084,7 +1084,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
           <div className="mb-6 grid grid-cols-3 gap-3 rounded-2xl border border-white/10 bg-black/55 p-4 shadow-inner">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Balance</span>
-              <p className="font-mono text-xl text-casino-ivory md:text-2xl">{displayCredits.toLocaleString()}</p>
+               <p className="font-mono text-xl text-casino-ivory sm:text-2xl md:text-2xl">{displayCredits.toLocaleString()}</p>
             </div>
             <div className="text-center">
               <span className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Bet</span>
@@ -1096,15 +1096,15 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
                 {bonusState.freeSpinTickets > 0 ? 'TICKET' : bet}
               </button>
             </div>
-            <div className="text-right">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Last Win</span>
-              <p className="font-mono text-xl text-casino-gold md:text-2xl">{lastWin > 0 ? `+${lastWin.toLocaleString()}` : '0'}</p>
-            </div>
+             <div className="text-right">
+               <span className="font-mono text-[10px] uppercase tracking-widest text-casino-muted">Last Win</span>
+               <p className="font-mono text-lg text-casino-gold sm:text-xl md:text-2xl">{lastWin > 0 ? `+${lastWin.toLocaleString()}` : '0'}</p>
+             </div>
           </div>
 
           <div
             ref={boardRef}
-            className="relative mx-auto grid min-h-[260px] w-full max-w-[760px] transform-gpu gap-2 overflow-hidden rounded-3xl border-4 border-[#171717] bg-[#050505] p-4 shadow-[inset_0_0_50px_rgba(0,0,0,1)] will-change-transform sm:min-h-[300px] sm:gap-3 sm:p-5 md:gap-3 md:p-6"
+            className="relative mx-auto grid min-h-[240px] w-full max-w-[760px] transform-gpu gap-1 overflow-hidden rounded-3xl border-4 border-[#171717] bg-[#050505] p-3 shadow-[inset_0_0_50px_rgba(0,0,0,1)] will-change-transform sm:min-h-[280px] sm:gap-2 sm:p-4 md:min-h-[300px] md:gap-3 md:p-6"
             style={{ gridTemplateColumns: `repeat(${activeGame.cols}, minmax(0, 1fr))` }}
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-1/2 bg-gradient-to-b from-white/[0.04] to-transparent" />
@@ -1112,7 +1112,7 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
               row.map((id, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className="flex aspect-square min-h-0 items-center justify-center rounded-xl border border-white/[0.04] bg-black/45 shadow-[inset_0_0_18px_rgba(0,0,0,0.75)]"
+                  className="flex aspect-square min-h-0 min-w-0 items-center justify-center rounded-xl border border-white/[0.04] bg-black/45 shadow-[inset_0_0_18px_rgba(0,0,0,0.75)]"
                 >
                   {renderSymbol(id, rowIndex, colIndex)}
                 </div>
@@ -1120,58 +1120,58 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
             )}
           </div>
 
-          <div className="mt-8 flex flex-col items-stretch justify-between gap-4 lg:flex-row lg:items-center">
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={isAutoSpin ? stopAutoSpin : startAutoSpin}
-                aria-pressed={isAutoSpin}
-                className={`px-4 py-4 font-mono text-xs uppercase tracking-widest transition ${isAutoSpin ? 'bg-casino-neon/20 text-casino-neon' : 'bg-[#151515] text-casino-ivory/60 hover:text-casino-ivory'}`}
-              >
-                {isAutoSpin ? 'Stop Auto' : 'Auto Spin'}
-              </button>
-              <button
-                onClick={setMaxBet}
-                disabled={isSpinning || isAutoSpin}
-                className="bg-[#151515] px-4 py-4 font-mono text-xs uppercase tracking-widest text-casino-ivory/60 transition hover:text-casino-gold disabled:opacity-40"
-              >
-                Max Bet
-              </button>
-              <button
-                onClick={() => setShowPaytable((value) => !value)}
-                aria-expanded={showPaytable}
-                className={`px-4 py-4 font-mono text-xs uppercase tracking-widest transition ${showPaytable ? 'bg-casino-ember/20 text-casino-ember' : 'bg-[#151515] text-casino-ivory/60 hover:text-casino-ivory'}`}
-              >
-                Paytable
-              </button>
-            </div>
-
+        <div className="mt-8 flex flex-col items-stretch justify-between gap-3 lg:flex-row lg:items-center">
+          <div className="grid grid-cols-3 gap-2 xs:gap-3">
             <button
-              onClick={isAutoSpin ? stopAutoSpin : performSpin}
-              disabled={!isAutoSpin && (isSpinning || !canSpin)}
-              className={`relative overflow-hidden px-12 py-5 font-serif text-3xl uppercase tracking-widest transition ${
-                !isAutoSpin && (isSpinning || !canSpin)
-                  ? 'bg-[#1a1a1a] text-casino-muted'
-                  : 'bg-casino-ember text-casino-ivory shadow-[0_10px_30px_rgba(255,0,127,0.4)] hover:bg-rose-600'
-              }`}
+              onClick={isAutoSpin ? stopAutoSpin : startAutoSpin}
+              aria-pressed={isAutoSpin}
+              className={`min-h-[44px] px-3 py-3 font-mono text-[11px] xs:text-xs uppercase tracking-widest transition ${isAutoSpin ? 'bg-casino-neon/20 text-casino-neon' : 'bg-[#151515] text-casino-ivory/60 hover:text-casino-ivory'}`}
             >
+              {isAutoSpin ? 'Stop Auto' : 'Auto Spin'}
+            </button>
+            <button
+              onClick={setMaxBet}
+              disabled={isSpinning || isAutoSpin}
+              className="min-h-[44px] bg-[#151515] px-3 py-3 font-mono text-[11px] xs:text-xs uppercase tracking-widest text-casino-ivory/60 transition hover:text-casino-gold disabled:opacity-40"
+            >
+              Max Bet
+            </button>
+            <button
+              onClick={() => setShowPaytable((value) => !value)}
+              aria-expanded={showPaytable}
+              className={`min-h-[44px] px-3 py-3 font-mono text-[11px] xs:text-xs uppercase tracking-widest transition ${showPaytable ? 'bg-casino-ember/20 text-casino-ember' : 'bg-[#151515] text-casino-ivory/60 hover:text-casino-ivory'}`}
+            >
+              Paytable
+            </button>
+          </div>
+
+          <button
+            onClick={isAutoSpin ? stopAutoSpin : performSpin}
+            disabled={!isAutoSpin && (isSpinning || !canSpin)}
+            className={`relative overflow-hidden min-h-[44px] px-6 xs:px-8 py-3 xs:py-4 font-serif text-xl xs:text-2xl md:text-3xl uppercase tracking-widest transition ${
+              !isAutoSpin && (isSpinning || !canSpin)
+                ? 'bg-[#1a1a1a] text-casino-muted'
+                : 'bg-casino-ember text-casino-ivory shadow-[0_10px_30px_rgba(255,0,127,0.4)] hover:bg-rose-600'
+            }`}
+          >
               <span className="relative z-10">{isAutoSpin ? 'Stop' : isSpinning ? 'Spinning' : bonusState.freeSpinTickets > 0 ? `Ticket x${bonusState.freeSpinTickets}` : 'Spin'}</span>
             </button>
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-            <button
-              onClick={() => setMuted((value) => !value)}
-              aria-pressed={muted}
-              className="flex items-center gap-2 border border-white/5 bg-[#111] px-4 py-2 text-casino-muted transition hover:text-casino-ivory"
-            >
+             <button
+               onClick={() => setMuted((value) => !value)}
+               aria-pressed={muted}
+               className="flex min-h-[44px] items-center gap-2 border border-white/5 bg-[#111] px-3 py-2 text-casino-muted transition hover:text-casino-ivory"
+             >
               {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
               <span className="font-mono text-xs">{muted ? 'Muted' : 'Sound On'}</span>
             </button>
-            <button
-              onClick={resetCredits}
-              disabled={isSpinning}
-              className="flex items-center gap-2 border border-white/5 bg-[#111] px-4 py-2 text-casino-muted transition hover:text-casino-ember disabled:opacity-50"
-            >
+             <button
+               onClick={resetCredits}
+               disabled={isSpinning}
+               className="flex min-h-[44px] items-center gap-2 border border-white/5 bg-[#111] px-3 py-2 text-casino-muted transition hover:text-casino-ember disabled:opacity-50"
+             >
               <RotateCcw className="h-4 w-4" />
               <span className="font-mono text-xs">Reset Demo</span>
             </button>
@@ -1187,25 +1187,25 @@ export default function PlayableSlotSection({ sectionId = 'play' }: PlayableSlot
             >
               <X className="h-5 w-5" />
             </button>
-            <h3 className="font-serif text-2xl uppercase text-casino-gold">{activeGame.title} Paytable</h3>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-casino-muted">{activeGame.bonusHook}</p>
-            <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+             <h3 className="font-serif text-xl sm:text-2xl uppercase text-casino-gold">{activeGame.title} Paytable</h3>
+             <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-6 text-casino-muted">{activeGame.bonusHook}</p>
+             <div className="mt-6 grid grid-cols-2 gap-2 md:grid-cols-3">
               {activeGame.symbols.map((symbol) => {
                 const Icon = symbol.icon;
                 return (
-                  <div key={symbol.id} className="flex items-center gap-3 border border-white/5 bg-white/[0.04] p-4">
-                    <Icon className="h-8 w-8 shrink-0" color={symbol.color} />
+                   <div key={symbol.id} className="flex items-center gap-2 border border-white/5 bg-white/[0.04] p-3">
+                     <Icon className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 shrink-0" color={symbol.color} />
                     <div>
-                      <p className="font-mono text-xs text-casino-muted">{symbol.label}</p>
-                      <p className="font-mono text-lg font-bold" style={{ color: symbol.color }}>{symbol.role === 'cash' ? 'locks cash' : `${symbol.payout}x`}</p>
+                       <p className="font-mono text-[10px] sm:text-xs text-casino-muted">{symbol.label}</p>
+                       <p className="font-mono text-lg sm:text-xl font-bold" style={{ color: symbol.color }}>{symbol.role === 'cash' ? 'locks cash' : `${symbol.payout}x`}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
+             <div className="mt-6 grid gap-2 md:grid-cols-3">
               {activeGame.paytable.map((line) => (
-                <p key={line} className="border border-casino-neon/15 bg-casino-neon/5 p-3 font-mono text-xs uppercase leading-5 tracking-widest text-casino-muted">
+                 <p key={line} className="border border-casino-neon/15 bg-casino-neon/5 p-2 md:p-3 font-mono text-[10px] xs:text-xs uppercase leading-5 tracking-widest text-casino-muted">
                   {line}
                 </p>
               ))}
