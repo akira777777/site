@@ -9,6 +9,7 @@ export function RitualCircle3D({ isSealed = false }: { isSealed?: boolean }) {
   const ring2Ref = useRef<THREE.Group>(null);
   const ring3Ref = useRef<THREE.Group>(null);
   const coreLightRef = useRef<THREE.PointLight>(null);
+  const auraRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -20,14 +21,47 @@ export function RitualCircle3D({ isSealed = false }: { isSealed?: boolean }) {
 
     if (coreLightRef.current) {
       const pulse = isSealed
-        ? Math.sin(t * 12) * 1.5 + 4.0
-        : Math.sin(t * 3.0) * 0.6 + 1.8;
+        ? Math.sin(t * 12) * 1.6 + 8.5
+        : Math.sin(t * 3.0) * 0.8 + 4.8;
       coreLightRef.current.intensity = pulse;
+    }
+    if (auraRef.current) {
+      const auraPulse = isSealed
+        ? Math.sin(t * 12) * 0.04 + 1.08
+        : Math.sin(t * 3) * 0.025 + 1;
+      auraRef.current.scale.setScalar(auraPulse);
+      (auraRef.current.material as THREE.MeshBasicMaterial).opacity = isSealed
+        ? 0.14 + Math.sin(t * 12) * 0.025
+        : 0.075 + Math.sin(t * 3) * 0.012;
     }
   });
 
   return (
     <group position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh ref={auraRef} position={[0, 0, -0.04]} renderOrder={1}>
+        <circleGeometry args={[3.25, 64]} />
+        <meshBasicMaterial
+          color={isSealed ? '#ff2049' : '#8f1832'}
+          transparent
+          opacity={isSealed ? 0.14 : 0.075}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
+        />
+      </mesh>
+
+      <mesh position={[0, 0, -0.025]} renderOrder={2}>
+        <circleGeometry args={[1.45, 48]} />
+        <meshBasicMaterial
+          color={isSealed ? '#ff4f45' : '#d04734'}
+          transparent
+          opacity={isSealed ? 0.18 : 0.1}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
+        />
+      </mesh>
+
       {/* Outer Slender Circle Ring */}
       <group ref={ring1Ref}>
         <mesh>
@@ -98,8 +132,9 @@ export function RitualCircle3D({ isSealed = false }: { isSealed?: boolean }) {
         ref={coreLightRef}
         position={[0, 0, 0.5]}
         color={isSealed ? '#ff0033' : '#e63946'}
-        intensity={2.2}
-        distance={7}
+        intensity={isSealed ? 8.5 : 4.8}
+        distance={9}
+        decay={2}
       />
     </group>
   );
