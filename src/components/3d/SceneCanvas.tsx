@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { CathedralScene } from './CathedralScene';
 import { RitualCircle3D } from './RitualCircle3D';
 import { WeaponForge3D } from './WeaponForge3D';
+import { GothicEnvironment } from './GothicEnvironment';
 import { ElementType } from '@/lib/types';
 
 interface CameraScrollerProps {
@@ -98,18 +99,22 @@ export function SceneCanvas({
     <div className="fixed inset-0 z-0 pointer-events-none bg-[#060608]">
       <Canvas
         camera={{ position: [0, 3.2, 8.5], fov: 46, near: 0.1, far: 90 }}
+        shadows="soft"
         gl={{
           antialias: true,
           powerPreference: 'high-performance',
           alpha: false,
           depth: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.15,
+          toneMappingExposure: 1.02,
         }}
         dpr={[1, 1.5]}
       >
         {/* Solid Dark Abyss background */}
-        <color attach="background" args={['#060608']} />
+        <color attach="background" args={['#050507']} />
+
+        {/* Low-cost studio reflections keep metal readable without lifting the black levels. */}
+        <GothicEnvironment intensity={0.62} />
 
         <CameraController scrollProgress={scrollProgress} mousePos={mousePos.current} />
 
@@ -127,7 +132,7 @@ export function SceneCanvas({
         </group>
 
         {/* Volumetric Atmosphere Fog */}
-        <fog attach="fog" args={['#060608', 20, 80]} />
+        <fogExp2 attach="fog" args={['#050507', 0.018]} />
       </Canvas>
     </div>
   );

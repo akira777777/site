@@ -21,6 +21,8 @@ export function WeaponForge3D({
 }: WeaponForgeProps) {
   const groupRef = useRef<THREE.Group>(null);
   const glowMeshRef = useRef<THREE.Mesh>(null);
+  const glowHaloRef = useRef<THREE.Mesh>(null);
+  const elementLightRef = useRef<THREE.PointLight>(null);
   const damascusTex = useMemo(() => getDamascusSteelTextures(), []);
 
   const getElementColor = (elem: ElementType) => {
@@ -49,6 +51,14 @@ export function WeaponForge3D({
     if (glowMeshRef.current) {
       const pulse = Math.sin(t * 4.0) * 0.4 + 1.4;
       (glowMeshRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse * 2.8;
+      if (glowHaloRef.current) {
+        const haloMaterial = glowHaloRef.current.material as THREE.MeshBasicMaterial;
+        haloMaterial.opacity = 0.07 + pulse * 0.025;
+        glowHaloRef.current.scale.setScalar(0.98 + pulse * 0.025);
+      }
+      if (elementLightRef.current) {
+        elementLightRef.current.intensity = 5.6 + pulse * 1.4;
+      }
     }
   });
 
@@ -56,10 +66,12 @@ export function WeaponForge3D({
     <group ref={groupRef} scale={[scale, scale, scale]}>
       {/* Dynamic Point Light matching active Element */}
       <pointLight
-        position={[0, 0.5, 0.5]}
+        ref={elementLightRef}
+        position={[0, 0.9, 0.55]}
         color={elemColors.light}
-        intensity={3.5}
-        distance={10}
+        intensity={6.8}
+        distance={11}
+        decay={2}
       />
 
       {weaponId === 'soulcleaver' && (
@@ -101,6 +113,17 @@ export function WeaponForge3D({
               emissive={elemColors.emissive}
               emissiveIntensity={3.5}
               roughness={0.1}
+            />
+          </mesh>
+          <mesh ref={glowHaloRef} position={[0, 1.6, 0.055]} renderOrder={3}>
+            <boxGeometry args={[0.3, 3.0, 0.025]} />
+            <meshBasicMaterial
+              color={elemColors.light}
+              transparent
+              opacity={0.1}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
             />
           </mesh>
 
@@ -174,6 +197,18 @@ export function WeaponForge3D({
                 emissiveIntensity={4.2}
               />
             </mesh>
+            <mesh ref={glowHaloRef} renderOrder={3}>
+              <sphereGeometry args={[0.7, 20, 20]} />
+              <meshBasicMaterial
+                color={elemColors.light}
+                transparent
+                opacity={0.1}
+                side={THREE.BackSide}
+                depthWrite={false}
+                blending={THREE.AdditiveBlending}
+                toneMapped={false}
+              />
+            </mesh>
 
             {/* Spikes */}
             {Array.from({ length: 12 }).map((_, i) => {
@@ -242,6 +277,22 @@ export function WeaponForge3D({
               color={elemColors.primary}
               emissive={elemColors.emissive}
               emissiveIntensity={4.2}
+            />
+          </mesh>
+          <mesh
+            ref={glowHaloRef}
+            position={[-0.85, 1.6, 0.045]}
+            rotation={[0, 0, 0.4]}
+            renderOrder={3}
+          >
+            <boxGeometry args={[1.55, 0.16, 0.025]} />
+            <meshBasicMaterial
+              color={elemColors.light}
+              transparent
+              opacity={0.1}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
             />
           </mesh>
         </group>

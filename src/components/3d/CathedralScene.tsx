@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useLayoutEffect, useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { EmberParticles } from './EmberParticles';
@@ -311,21 +311,31 @@ function RoseWindow({ position = [0, 14, -28] }: { position?: [number, number, n
         </mesh>
       ))}
       {/* Stained Glass Translucent Rose */}
+      <mesh position={[0, 0, -0.12]} scale={[1.12, 1.12, 1.12]}>
+        <circleGeometry args={[4.8, 48]} />
+        <meshBasicMaterial
+          color="#d67832"
+          transparent
+          opacity={0.08}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
+        />
+      </mesh>
       <mesh position={[0, 0, -0.05]}>
         <circleGeometry args={[4.8, 48]} />
         <meshStandardMaterial
           map={roseTex}
           emissive="#d4973b"
           emissiveMap={roseTex}
-          emissiveIntensity={1.6}
+          emissiveIntensity={1.25}
           transparent
           opacity={0.88}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {/* Backlight Beacon Rays */}
-      <pointLight color="#d97706" intensity={3.5} distance={30} decay={2.0} />
-      <directionalLight position={[0, 14, -32]} intensity={1.5} color="#f59e0b" />
+      {/* A local beacon blooms around the glass; the nave beam is handled globally. */}
+      <pointLight position={[0, 0, 1]} color="#d97736" intensity={7} distance={22} decay={2} />
     </group>
   );
 }
@@ -335,6 +345,7 @@ function ObsidianMonolith() {
   const monolithRef = useRef<THREE.Group>(null);
   const runeLightRef = useRef<THREE.PointLight>(null);
   const runeMatRef = useRef<THREE.MeshStandardMaterial>(null);
+  const runeAuraRef = useRef<THREE.Mesh>(null);
   const runeTex = useMemo(() => getRuneEmissiveTexture(), []);
 
   useFrame(({ clock }) => {
@@ -344,9 +355,15 @@ function ObsidianMonolith() {
       monolithRef.current.rotation.y = Math.sin(t * 0.3) * 0.15;
     }
     if (runeLightRef.current && runeMatRef.current) {
-      const intensity = Math.sin(t * 2.5) * 0.8 + 2.8;
+      const intensity = Math.sin(t * 2.5) * 0.65 + 5.2;
       runeLightRef.current.intensity = intensity;
-      runeMatRef.current.emissiveIntensity = intensity * 0.9;
+      runeMatRef.current.emissiveIntensity = intensity * 0.48;
+    }
+    if (runeAuraRef.current) {
+      const auraPulse = Math.sin(t * 2.5) * 0.035 + 1;
+      runeAuraRef.current.scale.setScalar(auraPulse);
+      (runeAuraRef.current.material as THREE.MeshBasicMaterial).opacity =
+        0.055 + Math.sin(t * 2.5) * 0.012;
     }
   });
 
@@ -371,6 +388,18 @@ function ObsidianMonolith() {
       ))}
 
       {/* Glowing Runic Inscription Core Ring */}
+      <mesh ref={runeAuraRef}>
+        <sphereGeometry args={[1.65, 24, 24]} />
+        <meshBasicMaterial
+          color="#e9a23c"
+          transparent
+          opacity={0.055}
+          side={THREE.BackSide}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
+        />
+      </mesh>
       <mesh>
         <torusGeometry args={[1.25, 0.05, 16, 64]} />
         <meshStandardMaterial
@@ -387,7 +416,7 @@ function ObsidianMonolith() {
       <pointLight
         ref={runeLightRef}
         color="#f59e0b"
-        intensity={3.2}
+        intensity={5.2}
         distance={14}
         decay={2.0}
       />
@@ -438,12 +467,23 @@ function CathedralTorch({
   hasLight?: boolean;
 }) {
   const lightRef = useRef<THREE.PointLight>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const phase = Math.abs(position[0] * 0.71 + position[2] * 0.37);
 
   useFrame(({ clock }) => {
+    const t = (clock.elapsedTime || performance.now() * 0.001) + phase;
+    const flicker =
+      Math.sin(t * 11.7) * 0.34 +
+      Math.sin(t * 19.1 + 1.4) * 0.2 +
+      Math.cos(t * 7.3) * 0.12;
+
     if (lightRef.current) {
-      const t = clock.elapsedTime || performance.now() * 0.001;
-      const flicker = Math.sin(t * 14) * 0.3 + Math.cos(t * 26) * 0.2;
-      lightRef.current.intensity = 2.4 + flicker;
+      lightRef.current.intensity = 5.4 + flicker;
+    }
+    if (glowRef.current) {
+      const scale = 1 + flicker * 0.035;
+      glowRef.current.scale.setScalar(scale);
+      (glowRef.current.material as THREE.MeshBasicMaterial).opacity = 0.1 + flicker * 0.012;
     }
   });
 
@@ -458,19 +498,97 @@ function CathedralTorch({
         <meshStandardMaterial
           color="#ff7b00"
           emissive="#ff5400"
-          emissiveIntensity={3.5}
+          emissiveIntensity={2.8}
+        />
+      </mesh>
+      <mesh ref={glowRef} position={[0, 0.35, 0]} renderOrder={2}>
+        <sphereGeometry args={[0.42, 16, 16]} />
+        <meshBasicMaterial
+          color="#ff9b45"
+          transparent
+          opacity={0.1}
+          side={THREE.BackSide}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
         />
       </mesh>
       {hasLight && (
         <pointLight
           ref={lightRef}
+          position={[0, 0.4, 0.08]}
           color="#ff8c00"
-          intensity={2.4}
-          distance={14}
-          decay={2.0}
+          intensity={5.4}
+          distance={12}
+          decay={2}
         />
       )}
     </group>
+  );
+}
+
+function CathedralLightRig() {
+  const keyLightRef = useRef<THREE.DirectionalLight>(null);
+  const rimLightRef = useRef<THREE.DirectionalLight>(null);
+
+  useLayoutEffect(() => {
+    const keyLight = keyLightRef.current;
+    const rimLight = rimLightRef.current;
+
+    if (keyLight) {
+      keyLight.target.position.set(0, 1.5, -14);
+      keyLight.parent?.add(keyLight.target);
+    }
+    if (rimLight) {
+      rimLight.target.position.set(0, 2, -14);
+      rimLight.parent?.add(rimLight.target);
+    }
+
+    return () => {
+      if (keyLight) keyLight.parent?.remove(keyLight.target);
+      if (rimLight) rimLight.parent?.remove(rimLight.target);
+    };
+  }, []);
+
+  return (
+    <>
+      <ambientLight intensity={0.16} color="#273044" />
+      <hemisphereLight args={['#64789b', '#100d0f', 0.42]} />
+
+      <directionalLight
+        ref={keyLightRef}
+        position={[11, 23, 9]}
+        intensity={1.75}
+        color="#f0d2a5"
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-near={1}
+        shadow-camera-far={70}
+        shadow-camera-left={-26}
+        shadow-camera-right={26}
+        shadow-camera-top={24}
+        shadow-camera-bottom={-18}
+        shadow-bias={-0.00025}
+        shadow-normalBias={0.035}
+        shadow-radius={4}
+      />
+
+      <directionalLight
+        ref={rimLightRef}
+        position={[-14, 17, -25]}
+        intensity={1.15}
+        color="#7796c4"
+      />
+
+      <pointLight
+        position={[0, 7, -14]}
+        color="#46597a"
+        intensity={3.2}
+        distance={38}
+        decay={2}
+      />
+    </>
   );
 }
 
@@ -520,32 +638,7 @@ export function CathedralScene() {
       {/* Floating Embers */}
       <EmberParticles count={260} area={[16, 18, 35]} color="#f59e0b" speed={0.8} />
 
-      {/* ====================================================
-          MASTER CHIAROSCURO 3-POINT LIGHT RIG
-          ==================================================== */}
-
-      {/* 1. Atmospheric Ambient (Subtle cool fill preventing pitch-black clipping) */}
-      <ambientLight intensity={0.4} color="#2d3345" />
-
-      {/* 2. Cathedral Vault Sky/Floor Hemisphere */}
-      <hemisphereLight args={['#50607a', '#141418', 0.65]} />
-
-      {/* 3. KEY LIGHT: Vaulted Clerestory Sunbeam (Warm Amber Gold) */}
-      <directionalLight
-        position={[12, 26, 12]}
-        intensity={2.4}
-        color="#fde68a"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0005}
-      />
-
-      {/* 4. RIM LIGHT: High-Angle Cold Moonlight (Chiseled Silhouette Highlights) */}
-      <directionalLight
-        position={[-16, 22, -16]}
-        intensity={2.0}
-        color="#7da4d4"
-      />
+      <CathedralLightRig />
     </group>
   );
 }

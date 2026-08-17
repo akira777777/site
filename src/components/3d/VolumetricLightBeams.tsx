@@ -1,77 +1,98 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useLayoutEffect, useRef } from 'react';
+import { SpotLight } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Procedural Volumetric God-Ray Light Shafts for Gothic Cathedral Nave
+interface AtmosphericBeamProps {
+  position: [number, number, number];
+  target: [number, number, number];
+  color: string;
+  intensity: number;
+  distance: number;
+  angle: number;
+  opacity: number;
+  radiusBottom: number;
+}
 
-export function VolumetricLightBeams() {
-  const beamGroupRef = useRef<THREE.Group>(null);
+function AtmosphericBeam({
+  position,
+  target,
+  color,
+  intensity,
+  distance,
+  angle,
+  opacity,
+  radiusBottom,
+}: AtmosphericBeamProps) {
+  const lightRef = useRef<THREE.SpotLight>(null);
+  const [targetX, targetY, targetZ] = target;
 
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (beamGroupRef.current) {
-      // Subtle atmospheric shimmer
-      beamGroupRef.current.children.forEach((child, i) => {
-        const mesh = child as THREE.Mesh;
-        if (mesh.material) {
-          const mat = mesh.material as THREE.MeshBasicMaterial;
-          mat.opacity = 0.08 + Math.sin(t * 1.5 + i * 1.8) * 0.03;
-        }
-      });
-    }
-  });
+  useLayoutEffect(() => {
+    const light = lightRef.current;
+    if (!light) return;
+
+    light.target.position.set(targetX, targetY, targetZ);
+    light.parent?.add(light.target);
+
+    return () => {
+      light.parent?.remove(light.target);
+    };
+  }, [targetX, targetY, targetZ]);
 
   return (
-    <group ref={beamGroupRef}>
-      {/* 1. Main Sunbeam Angle from Upper Right Clerestory Arches */}
-      <mesh
-        position={[4, 10, -4]}
-        rotation={[0.35, 0, -0.45]}
-      >
-        <cylinderGeometry args={[0.8, 3.8, 22, 16, 1, true]} />
-        <meshBasicMaterial
-          color="#fde68a"
-          transparent
-          opacity={0.1}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
+    <SpotLight
+      ref={lightRef}
+      position={position}
+      color={color}
+      intensity={intensity}
+      distance={distance}
+      decay={2}
+      angle={angle}
+      penumbra={0.92}
+      opacity={opacity}
+      attenuation={7}
+      anglePower={6}
+      radiusTop={0.18}
+      radiusBottom={radiusBottom}
+      castShadow={false}
+    />
+  );
+}
 
-      {/* 2. Secondary Sunbeam from Rose Window Nave End */}
-      <mesh
-        position={[0, 11, -18]}
-        rotation={[-0.4, 0, 0]}
-      >
-        <cylinderGeometry args={[1.2, 5.2, 24, 16, 1, true]} />
-        <meshBasicMaterial
-          color="#f59e0b"
-          transparent
-          opacity={0.08}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-
-      {/* 3. Cold Moonbeam Cross-Shaft from Left High Arch */}
-      <mesh
-        position={[-5, 9, -10]}
-        rotation={[0.3, 0, 0.5]}
-      >
-        <cylinderGeometry args={[0.6, 3.2, 18, 16, 1, true]} />
-        <meshBasicMaterial
-          color="#93c5fd"
-          transparent
-          opacity={0.06}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
+export function VolumetricLightBeams() {
+  return (
+    <group>
+      <AtmosphericBeam
+        position={[6.5, 14, 1]}
+        target={[0, 0.5, -11]}
+        color="#f4ddb3"
+        intensity={22}
+        distance={24}
+        angle={0.25}
+        opacity={0.075}
+        radiusBottom={4.8}
+      />
+      <AtmosphericBeam
+        position={[0, 14, -27.5]}
+        target={[0, 1, -8]}
+        color="#d68a42"
+        intensity={18}
+        distance={31}
+        angle={0.22}
+        opacity={0.055}
+        radiusBottom={5.2}
+      />
+      <AtmosphericBeam
+        position={[-7, 11, -14]}
+        target={[2, 0.8, -10]}
+        color="#7694bf"
+        intensity={10}
+        distance={19}
+        angle={0.2}
+        opacity={0.035}
+        radiusBottom={3.2}
+      />
     </group>
   );
 }
