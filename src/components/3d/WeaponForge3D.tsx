@@ -68,11 +68,13 @@ export function WeaponForge3D({
           <mesh position={[0, 1.6, 0]} castShadow receiveShadow>
             <boxGeometry args={[0.42, 3.2, 0.06]} />
             <meshStandardMaterial
-              color="#586078"
+              map={damascusTex.map}
+              color="#aeb6c8"
               roughness={0.22}
-              metalness={0.92}
+              metalness={1}
               normalMap={damascusTex.normalMap}
               roughnessMap={damascusTex.roughnessMap}
+              metalnessMap={damascusTex.metalnessMap}
               normalScale={new THREE.Vector2(0.5, 0.5)}
             />
           </mesh>
@@ -81,10 +83,13 @@ export function WeaponForge3D({
           <mesh position={[0, 3.45, 0]} rotation={[0, 0, Math.PI / 4]} castShadow receiveShadow>
             <boxGeometry args={[0.3, 0.3, 0.06]} />
             <meshStandardMaterial
-              color="#586078"
+              map={damascusTex.map}
+              color="#aeb6c8"
               roughness={0.22}
-              metalness={0.92}
+              metalness={1}
               normalMap={damascusTex.normalMap}
+              roughnessMap={damascusTex.roughnessMap}
+              metalnessMap={damascusTex.metalnessMap}
             />
           </mesh>
 
@@ -150,10 +155,13 @@ export function WeaponForge3D({
             <mesh castShadow receiveShadow>
               <icosahedronGeometry args={[0.68, 1]} />
               <meshStandardMaterial
-                color="#454c60"
+                map={damascusTex.map}
+                color="#a3abbd"
                 roughness={0.25}
-                metalness={0.88}
+                metalness={1}
                 normalMap={damascusTex.normalMap}
+                roughnessMap={damascusTex.roughnessMap}
+                metalnessMap={damascusTex.metalnessMap}
               />
             </mesh>
 
@@ -203,10 +211,13 @@ export function WeaponForge3D({
           <mesh position={[-0.8, 1.7, 0]} rotation={[0, 0, 0.4]} castShadow receiveShadow>
             <boxGeometry args={[1.5, 0.2, 0.06]} />
             <meshStandardMaterial
-              color="#4e566e"
+              map={damascusTex.map}
+              color="#a9b1c3"
               roughness={0.18}
-              metalness={0.92}
+              metalness={1}
               normalMap={damascusTex.normalMap}
+              roughnessMap={damascusTex.roughnessMap}
+              metalnessMap={damascusTex.metalnessMap}
             />
           </mesh>
 
@@ -214,10 +225,13 @@ export function WeaponForge3D({
           <mesh position={[-1.7, 1.2, 0]} rotation={[0, 0, 1.2]} castShadow>
             <coneGeometry args={[0.18, 1.4, 4]} />
             <meshStandardMaterial
-              color="#4e566e"
+              map={damascusTex.map}
+              color="#a9b1c3"
               roughness={0.18}
-              metalness={0.92}
+              metalness={1}
               normalMap={damascusTex.normalMap}
+              roughnessMap={damascusTex.roughnessMap}
+              metalnessMap={damascusTex.metalnessMap}
             />
           </mesh>
 

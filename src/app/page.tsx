@@ -109,14 +109,8 @@ export default function Home() {
       />
 
       {/* Atmospheric Film Grain & Vignette Overlay */}
-      <div className="pointer-events-none fixed inset-0 z-20 mix-blend-overlay opacity-30 bg-[radial-gradient(circle_at_center,transparent_30%,#000_100%)]" />
-      <div
-        className="pointer-events-none fixed inset-0 z-20 opacity-20"
-        style={{
-          backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 0)`,
-          backgroundSize: '24px 24px',
-        }}
-      />
+      <div className="atmospheric-vignette pointer-events-none fixed inset-0 z-20" />
+      <div className="ambient-grain pointer-events-none fixed inset-0 z-20" />
 
       {/* Custom Particle Ember Cursor */}
       <CustomCursor />

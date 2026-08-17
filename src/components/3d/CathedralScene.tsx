@@ -7,6 +7,7 @@ import { EmberParticles } from './EmberParticles';
 import { VolumetricLightBeams } from './VolumetricLightBeams';
 import {
   getCathedralFloorTextures,
+  getStoneTexture,
   getStoneNormalTexture,
   getStoneRoughnessTexture,
   getRoseWindowTexture,
@@ -62,6 +63,34 @@ function getSharedPillarBaseGeometry(): THREE.BoxGeometry {
   return sharedPillarBaseGeom;
 }
 
+function getSharedGargoyleTorsoGeometry(): THREE.BoxGeometry {
+  if (!sharedGargoyleTorsoGeom) {
+    sharedGargoyleTorsoGeom = new THREE.BoxGeometry(0.75, 0.95, 0.65);
+  }
+  return sharedGargoyleTorsoGeom;
+}
+
+function getSharedGargoyleHeadGeometry(): THREE.BoxGeometry {
+  if (!sharedGargoyleHeadGeom) {
+    sharedGargoyleHeadGeom = new THREE.BoxGeometry(0.5, 0.5, 0.55);
+  }
+  return sharedGargoyleHeadGeom;
+}
+
+function getSharedHornGeometry(): THREE.ConeGeometry {
+  if (!sharedHornGeom) {
+    sharedHornGeom = new THREE.ConeGeometry(0.1, 0.55, 6);
+  }
+  return sharedHornGeom;
+}
+
+function getSharedWingGeometry(): THREE.BoxGeometry {
+  if (!sharedWingGeom) {
+    sharedWingGeom = new THREE.BoxGeometry(0.95, 1.3, 0.08);
+  }
+  return sharedWingGeom;
+}
+
 // Crisp Gothic Gargoyle Sentinel Statue
 function GothicGargoyle({
   position = [0, 0, 0],
@@ -70,13 +99,13 @@ function GothicGargoyle({
   position?: [number, number, number];
   rotation?: [number, number, number];
 }) {
+  const stoneMap = useMemo(() => getStoneTexture(), []);
   const normalMap = useMemo(() => getStoneNormalTexture(), []);
   const roughnessMap = useMemo(() => getStoneRoughnessTexture(), []);
-
-  if (!sharedGargoyleTorsoGeom) sharedGargoyleTorsoGeom = new THREE.BoxGeometry(0.75, 0.95, 0.65);
-  if (!sharedGargoyleHeadGeom) sharedGargoyleHeadGeom = new THREE.BoxGeometry(0.5, 0.5, 0.55);
-  if (!sharedHornGeom) sharedHornGeom = new THREE.ConeGeometry(0.1, 0.55, 6);
-  if (!sharedWingGeom) sharedWingGeom = new THREE.BoxGeometry(0.95, 1.3, 0.08);
+  const torsoGeometry = useMemo(() => getSharedGargoyleTorsoGeometry(), []);
+  const headGeometry = useMemo(() => getSharedGargoyleHeadGeometry(), []);
+  const hornGeometry = useMemo(() => getSharedHornGeometry(), []);
+  const wingGeometry = useMemo(() => getSharedWingGeometry(), []);
 
   return (
     <group position={position} rotation={rotation} scale={[0.55, 0.55, 0.55]}>
@@ -84,7 +113,8 @@ function GothicGargoyle({
       <mesh position={[0, -0.15, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.3, 0.3, 1.3]} />
         <meshStandardMaterial
-          color="#383844"
+          map={stoneMap}
+          color="#565664"
           roughness={0.7}
           metalness={0.2}
           normalMap={normalMap}
@@ -93,9 +123,10 @@ function GothicGargoyle({
       </mesh>
 
       {/* Hunched Torso */}
-      <mesh position={[0, 0.8, 0.1]} rotation={[0.4, 0, 0]} geometry={sharedGargoyleTorsoGeom} castShadow receiveShadow>
+      <mesh position={[0, 0.8, 0.1]} rotation={[0.4, 0, 0]} geometry={torsoGeometry} castShadow receiveShadow>
         <meshStandardMaterial
-          color="#32323e"
+          map={stoneMap}
+          color="#525260"
           roughness={0.65}
           metalness={0.25}
           normalMap={normalMap}
@@ -105,20 +136,21 @@ function GothicGargoyle({
 
       {/* Horned Head & Glowing Eyes */}
       <group position={[0, 1.45, 0.45]}>
-        <mesh geometry={sharedGargoyleHeadGeom} castShadow receiveShadow>
+        <mesh geometry={headGeometry} castShadow receiveShadow>
           <meshStandardMaterial
-            color="#40404e"
+            map={stoneMap}
+            color="#5d5d6b"
             roughness={0.6}
             metalness={0.25}
             normalMap={normalMap}
           />
         </mesh>
         {/* Left Horn */}
-        <mesh position={[-0.22, 0.35, -0.05]} rotation={[-0.3, 0, -0.4]} geometry={sharedHornGeom} castShadow>
+        <mesh position={[-0.22, 0.35, -0.05]} rotation={[-0.3, 0, -0.4]} geometry={hornGeometry} castShadow>
           <meshStandardMaterial color="#22222a" roughness={0.3} metalness={0.6} />
         </mesh>
         {/* Right Horn */}
-        <mesh position={[0.22, 0.35, -0.05]} rotation={[-0.3, 0, 0.4]} geometry={sharedHornGeom} castShadow>
+        <mesh position={[0.22, 0.35, -0.05]} rotation={[-0.3, 0, 0.4]} geometry={hornGeometry} castShadow>
           <meshStandardMaterial color="#22222a" roughness={0.3} metalness={0.6} />
         </mesh>
         {/* Glowing Ember Eyes */}
@@ -133,17 +165,19 @@ function GothicGargoyle({
       </group>
 
       {/* Bat Wings */}
-      <mesh position={[-0.75, 1.1, -0.2]} rotation={[0.2, 0.6, 0.4]} geometry={sharedWingGeom} castShadow>
+      <mesh position={[-0.75, 1.1, -0.2]} rotation={[0.2, 0.6, 0.4]} geometry={wingGeometry} castShadow>
         <meshStandardMaterial
-          color="#2d2d38"
+          map={stoneMap}
+          color="#4c4c58"
           roughness={0.7}
           metalness={0.2}
           normalMap={normalMap}
         />
       </mesh>
-      <mesh position={[0.75, 1.1, -0.2]} rotation={[0.2, -0.6, -0.4]} geometry={sharedWingGeom} castShadow>
+      <mesh position={[0.75, 1.1, -0.2]} rotation={[0.2, -0.6, -0.4]} geometry={wingGeometry} castShadow>
         <meshStandardMaterial
-          color="#2d2d38"
+          map={stoneMap}
+          color="#4c4c58"
           roughness={0.7}
           metalness={0.2}
           normalMap={normalMap}
@@ -166,6 +200,7 @@ function GothicArch({
   const archGeom = useMemo(() => getSharedArchGeometry(), []);
   const pillarGeom = useMemo(() => getSharedPillarGeometry(), []);
   const baseGeom = useMemo(() => getSharedPillarBaseGeometry(), []);
+  const stoneMap = useMemo(() => getStoneTexture(), []);
   const normalMap = useMemo(() => getStoneNormalTexture(), []);
   const roughnessMap = useMemo(() => getStoneRoughnessTexture(), []);
 
@@ -174,7 +209,8 @@ function GothicArch({
       {/* Main Arch Frame */}
       <mesh geometry={archGeom} receiveShadow castShadow>
         <meshStandardMaterial
-          color="#343440"
+          map={stoneMap}
+          color="#555563"
           roughness={0.7}
           metalness={0.15}
           normalMap={normalMap}
@@ -198,7 +234,8 @@ function GothicArch({
       {/* Fluted Left Pillar */}
       <mesh position={[-2.9, 3.25, 0.45]} geometry={pillarGeom} castShadow receiveShadow>
         <meshStandardMaterial
-          color="#3c3c4a"
+          map={stoneMap}
+          color="#626270"
           roughness={0.65}
           metalness={0.15}
           normalMap={normalMap}
@@ -208,13 +245,20 @@ function GothicArch({
       </mesh>
       {/* Left Pillar Base */}
       <mesh position={[-2.9, 0.25, 0.45]} geometry={baseGeom} castShadow receiveShadow>
-        <meshStandardMaterial color="#252530" roughness={0.75} normalMap={normalMap} />
+        <meshStandardMaterial
+          map={stoneMap}
+          color="#4d4d59"
+          roughness={0.75}
+          normalMap={normalMap}
+          roughnessMap={roughnessMap}
+        />
       </mesh>
 
       {/* Fluted Right Pillar */}
       <mesh position={[2.9, 3.25, 0.45]} geometry={pillarGeom} castShadow receiveShadow>
         <meshStandardMaterial
-          color="#3c3c4a"
+          map={stoneMap}
+          color="#626270"
           roughness={0.65}
           metalness={0.15}
           normalMap={normalMap}
@@ -224,7 +268,13 @@ function GothicArch({
       </mesh>
       {/* Right Pillar Base */}
       <mesh position={[2.9, 0.25, 0.45]} geometry={baseGeom} castShadow receiveShadow>
-        <meshStandardMaterial color="#252530" roughness={0.75} normalMap={normalMap} />
+        <meshStandardMaterial
+          map={stoneMap}
+          color="#4d4d59"
+          roughness={0.75}
+          normalMap={normalMap}
+          roughnessMap={roughnessMap}
+        />
       </mesh>
 
       {/* Gargoyle Sentinels */}
@@ -347,6 +397,7 @@ function ObsidianMonolith() {
 
 // Altar Stone Dais (Low, sleek basalt dais)
 function AltarDais() {
+  const stoneMap = useMemo(() => getStoneTexture(), []);
   const normalMap = useMemo(() => getStoneNormalTexture(), []);
   const roughnessMap = useMemo(() => getStoneRoughnessTexture(), []);
 
@@ -355,7 +406,8 @@ function AltarDais() {
       <mesh position={[0, 0.1, 0]} receiveShadow castShadow>
         <cylinderGeometry args={[2.4, 2.6, 0.2, 24]} />
         <meshStandardMaterial
-          color="#181820"
+          map={stoneMap}
+          color="#40404a"
           roughness={0.8}
           metalness={0.1}
           normalMap={normalMap}
@@ -365,7 +417,8 @@ function AltarDais() {
       <mesh position={[0, 0.25, 0]} receiveShadow castShadow>
         <cylinderGeometry args={[1.6, 1.8, 0.15, 24]} />
         <meshStandardMaterial
-          color="#22222c"
+          map={stoneMap}
+          color="#4a4a56"
           roughness={0.75}
           metalness={0.15}
           normalMap={normalMap}
