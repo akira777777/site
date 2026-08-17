@@ -11,7 +11,7 @@ import { ElementType } from '@/lib/types';
 
 interface CameraScrollerProps {
   scrollProgress: number;
-  mousePos: { x: number; y: number };
+  mousePos: React.RefObject<{ x: number; y: number }>;
 }
 
 function CameraController({ scrollProgress, mousePos }: CameraScrollerProps) {
@@ -54,8 +54,8 @@ function CameraController({ scrollProgress, mousePos }: CameraScrollerProps) {
     }
 
     // Add subtle mouse parallax
-    const parallaxX = (mousePos.x - 0.5) * 0.6;
-    const parallaxY = (mousePos.y - 0.5) * 0.4;
+    const parallaxX = (mousePos.current.x - 0.5) * 0.6;
+    const parallaxY = (mousePos.current.y - 0.5) * 0.4;
     tPos.x += parallaxX;
     tPos.y -= parallaxY;
 
@@ -116,7 +116,7 @@ export function SceneCanvas({
         {/* Low-cost studio reflections keep metal readable without lifting the black levels. */}
         <GothicEnvironment intensity={0.62} />
 
-        <CameraController scrollProgress={scrollProgress} mousePos={mousePos.current} />
+        <CameraController scrollProgress={scrollProgress} mousePos={mousePos} />
 
         {/* Global Dark Cathedral Environment */}
         <CathedralScene />

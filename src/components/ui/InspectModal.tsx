@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import { X, Sparkles, Flame, ShieldAlert, Zap } from 'lucide-react';
+import { ContactShadows, OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
+import { X, Sparkles, ShieldAlert } from 'lucide-react';
 import { RelicData, WeaponData, ElementType } from '@/lib/types';
 import { SingleRelicViewer } from '@/components/3d/RelicsScene3D';
 import { WeaponForge3D } from '@/components/3d/WeaponForge3D';
+import { GothicEnvironment } from '@/components/3d/GothicEnvironment';
 import { GothicCorner } from './Filigree';
 import { ScrambleText } from './ScrambleText';
 import { sound } from '@/components/audio/SoundEngine';
@@ -78,10 +80,54 @@ export function InspectModal({ item, onClose }: InspectModalProps) {
             <span>ORBIT 360° // DRAG & ZOOM [ESC TO CLOSE]</span>
           </div>
 
-          <Canvas camera={{ position: [0, 1, 3.8], fov: 45 }}>
-            <ambientLight intensity={0.25} />
-            <directionalLight position={[5, 10, 5]} intensity={lightIntensity * 0.7} color="#fff" />
-            <pointLight position={[-4, -2, -4]} intensity={lightIntensity * 0.4} color="#681313" />
+          <Canvas
+            camera={{ position: [0, 1, 3.8], fov: 45 }}
+            shadows="soft"
+            dpr={[1, 1.75]}
+            gl={{
+              antialias: true,
+              toneMapping: THREE.ACESFilmicToneMapping,
+              toneMappingExposure: 1.05,
+            }}
+          >
+            <color attach="background" args={['#08080c']} />
+            <GothicEnvironment intensity={0.82} />
+
+            <ambientLight intensity={0.14} color="#273044" />
+            <hemisphereLight args={['#617392', '#100d10', 0.35]} />
+            <directionalLight
+              position={[4.5, 8, 5]}
+              intensity={lightIntensity * 0.85}
+              color="#f1d5ad"
+              castShadow
+              shadow-mapSize-width={1024}
+              shadow-mapSize-height={1024}
+              shadow-camera-near={0.5}
+              shadow-camera-far={18}
+              shadow-camera-left={-4}
+              shadow-camera-right={4}
+              shadow-camera-top={4}
+              shadow-camera-bottom={-4}
+              shadow-bias={-0.0003}
+              shadow-normalBias={0.025}
+              shadow-radius={4}
+            />
+            <spotLight
+              position={[-4, 3, 3]}
+              intensity={lightIntensity * 1.25}
+              color="#7898c9"
+              distance={12}
+              angle={0.58}
+              penumbra={1}
+              decay={2}
+            />
+            <pointLight
+              position={[-2.5, -1, -2]}
+              intensity={lightIntensity * 0.65}
+              color="#8f2530"
+              distance={9}
+              decay={2}
+            />
 
             <OrbitControls
               enablePan={false}
@@ -100,6 +146,17 @@ export function InspectModal({ item, onClose }: InspectModalProps) {
             ) : (
               <SingleRelicViewer relicId={relic!.id} scale={1.3} />
             )}
+
+            <ContactShadows
+              position={[0, -1.35, 0]}
+              scale={5.5}
+              opacity={0.72}
+              blur={2.6}
+              far={4.5}
+              resolution={512}
+              frames={1}
+              color="#050407"
+            />
           </Canvas>
 
           {/* Bottom 3D Controls */}
