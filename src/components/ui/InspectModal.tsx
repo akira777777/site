@@ -82,7 +82,7 @@ export function InspectModal({ item, onClose }: InspectModalProps) {
 
           <Canvas
             camera={{ position: [0, 1, 3.8], fov: 45 }}
-            shadows="soft"
+            shadows="percentage"
             dpr={[1, 1.75]}
             gl={{
               antialias: true,

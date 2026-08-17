@@ -99,7 +99,7 @@ export function SceneCanvas({
     <div className="fixed inset-0 z-0 pointer-events-none bg-[#060608]">
       <Canvas
         camera={{ position: [0, 3.2, 8.5], fov: 46, near: 0.1, far: 90 }}
-        shadows="soft"
+        shadows="percentage"
         gl={{
           antialias: true,
           powerPreference: 'high-performance',
