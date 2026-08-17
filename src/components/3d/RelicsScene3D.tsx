@@ -4,6 +4,31 @@ import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+function AuraGlow({
+  color,
+  radius,
+  position = [0, 0, 0],
+}: {
+  color: string;
+  radius: number;
+  position?: [number, number, number];
+}) {
+  return (
+    <mesh position={position} renderOrder={2}>
+      <sphereGeometry args={[radius, 24, 24]} />
+      <meshBasicMaterial
+        color={color}
+        transparent
+        opacity={0.065}
+        side={THREE.BackSide}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+        toneMapped={false}
+      />
+    </mesh>
+  );
+}
+
 // 1. Crown of the Blind Martyr
 export function CrownRelic3D({ scale = 1 }: { scale?: number }) {
   const crownRef = useRef<THREE.Group>(null);
@@ -18,6 +43,7 @@ export function CrownRelic3D({ scale = 1 }: { scale?: number }) {
 
   return (
     <group ref={crownRef} scale={[scale, scale, scale]}>
+      <AuraGlow color="#e83a57" radius={2.05} />
       {/* Main thorny circlet - lustrous dark steel */}
       <mesh castShadow receiveShadow>
         <torusGeometry args={[1.5, 0.14, 16, 64]} />
@@ -54,7 +80,7 @@ export function CrownRelic3D({ scale = 1 }: { scale?: number }) {
         );
       })}
 
-      <pointLight color="#ff3366" intensity={2.8} distance={8} />
+      <pointLight color="#ff3366" intensity={5.8} distance={9} decay={2} />
     </group>
   );
 }
@@ -76,6 +102,7 @@ export function OculusRelic3D({ scale = 1 }: { scale?: number }) {
 
   return (
     <group ref={oculusRef} scale={[scale, scale, scale]}>
+      <AuraGlow color="#2cc9e5" radius={2.15} />
       {/* Central Void Crystal Sphere */}
       <mesh castShadow receiveShadow>
         <sphereGeometry args={[1.1, 32, 32]} />
@@ -108,7 +135,7 @@ export function OculusRelic3D({ scale = 1 }: { scale?: number }) {
         <meshStandardMaterial color="#d4973b" roughness={0.2} metalness={0.95} />
       </mesh>
 
-      <pointLight color="#00b4d8" intensity={3.2} distance={8} />
+      <pointLight color="#00b4d8" intensity={6.2} distance={9} decay={2} />
     </group>
   );
 }
@@ -131,6 +158,7 @@ export function ChaliceRelic3D({ scale = 1 }: { scale?: number }) {
 
   return (
     <group ref={chaliceRef} scale={[scale, scale, scale]}>
+      <AuraGlow color="#e34859" radius={1.55} position={[0, 0.4, 0]} />
       {/* Base */}
       <mesh position={[0, -1.2, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.9, 1.1, 0.25, 24]} />
@@ -168,7 +196,7 @@ export function ChaliceRelic3D({ scale = 1 }: { scale?: number }) {
         />
       </mesh>
 
-      <pointLight position={[0, 1.2, 0]} color="#ff4d6d" intensity={2.6} distance={7} />
+      <pointLight position={[0, 1.2, 0]} color="#ff4d6d" intensity={5.4} distance={8} decay={2} />
     </group>
   );
 }
@@ -193,6 +221,7 @@ export function CoreRelic3D({ scale = 1 }: { scale?: number }) {
 
   return (
     <group ref={coreRef} scale={[scale, scale, scale]}>
+      <AuraGlow color="#ff6b16" radius={1.85} />
       {/* Outer Wrought Iron Geodesic Cage */}
       <mesh castShadow receiveShadow>
         <dodecahedronGeometry args={[1.5, 0]} />
@@ -226,7 +255,7 @@ export function CoreRelic3D({ scale = 1 }: { scale?: number }) {
         />
       </mesh>
 
-      <pointLight color="#ff8500" intensity={3.5} distance={9} />
+      <pointLight color="#ff8500" intensity={6.8} distance={10} decay={2} />
     </group>
   );
 }
